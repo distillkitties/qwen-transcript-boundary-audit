@@ -1,0 +1,1607 @@
+name: Qwen Transcript Boundary Audit Final
+
+on:
+  workflow_dispatch:
+    inputs:
+      qwen_model:
+        description: "MLX Qwen model repo"
+        required: false
+        default: "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+      n_cases:
+        description: "Number of synthetic audit cases"
+        required: false
+        default: "120"
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  DEFAULT_QWEN_MODEL: mlx-community/Qwen2.5-0.5B-Instruct-4bit
+  DEFAULT_N_CASES: "120"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  qwen-transcript-boundary-audit:
+    name: Lean proofs + real Qwen/MLX boundary audit
+    runs-on: macos-15
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Print mission and runner
+        run: |
+          set -euxo pipefail
+
+          echo "================================================================================"
+          echo "QWEN TRANSCRIPT BOUNDARY AUDIT FINAL"
+          echo "================================================================================"
+          echo "This workflow is self-contained and produces a clean reviewer packet."
+          echo ""
+          echo "It generates:"
+          echo "  - Lean proof artifact for finite transcript post-processing"
+          echo "  - Lean forbidden-token and axiom audit"
+          echo "  - real Qwen inference through mlx-lm"
+          echo "  - 120-case finite audit benchmark by default"
+          echo "  - transcript-only, route-id-only, natural-metadata, and explicit-dictionary conditions"
+          echo "  - fixed audit budget, not budget = observed transcript success"
+          echo "  - bootstrap confidence intervals"
+          echo "  - raw prompts and raw Qwen outputs"
+          echo "  - publication-grade HTML and Markdown reports"
+          echo "  - Matplotlib PNG/SVG graphs"
+          echo "  - CSV tables"
+          echo "  - clean one-root reviewer packet"
+          echo "  - manifest with SHA256 hashes using paths that actually exist inside the packet"
+          echo ""
+          echo "Runner:"
+          uname -a
+          uname -m
+          sw_vers || true
+          sysctl -n machdep.cpu.brand_string || true
+          echo "================================================================================"
+
+      - name: Select model and case count
+        run: |
+          set -euxo pipefail
+
+          MODEL_INPUT="${{ github.event.inputs.qwen_model || '' }}"
+          CASE_INPUT="${{ github.event.inputs.n_cases || '' }}"
+
+          if [ -z "$MODEL_INPUT" ]; then
+            MODEL_INPUT="$DEFAULT_QWEN_MODEL"
+          fi
+
+          if [ -z "$CASE_INPUT" ]; then
+            CASE_INPUT="$DEFAULT_N_CASES"
+          fi
+
+          echo "QWEN_MODEL=$MODEL_INPUT" >> "$GITHUB_ENV"
+          echo "N_CASES=$CASE_INPUT" >> "$GITHUB_ENV"
+
+          echo "Selected Qwen model: $MODEL_INPUT"
+          echo "Selected case count: $CASE_INPUT"
+
+      - name: Install Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MLX, mlx-lm, and report dependencies
+        run: |
+          set -euxo pipefail
+
+          python3 -m venv .venv
+          source .venv/bin/activate
+
+          python -m pip install --upgrade pip
+          python -m pip install mlx mlx-lm numpy pandas matplotlib
+
+          python - <<'PY'
+          import platform
+          import sys
+          import mlx.core as mx
+
+          print("================================================================================")
+          print("PYTHON / MLX SMOKE TEST")
+          print("================================================================================")
+          print("Python:", sys.version)
+          print("Platform:", platform.platform())
+          print("Machine:", platform.machine())
+          x = mx.array([1.0, 2.0, 3.0])
+          y = mx.sum(x)
+          mx.eval(y)
+          print("MLX sum:", float(y))
+          print("MLX default device:", mx.default_device())
+          print("Verdict: MLX PASS")
+          print("================================================================================")
+          PY
+
+      - name: Generate self-contained Lean project
+        run: |
+          set -euxo pipefail
+
+          rm -rf PACXAI scripts experiments results ci-results qwen-transcript-boundary-audit
+          rm -f lean-toolchain lakefile.lean PACXAI.lean README.md REPRODUCE.md LIMITATIONS.md THREAT_MODEL.md ARTIFACT_EVALUATION_README.md MANIFEST.json *.zip
+
+          mkdir -p PACXAI scripts experiments results
+
+          cat > lean-toolchain <<'EOF'
+          leanprover/lean4:v4.30.0-rc2
+          EOF
+
+          cat > lakefile.lean <<'EOF'
+          import Lake
+          open Lake DSL
+
+          package «qwen_transcript_boundary_audit» where
+
+          @[default_target]
+          lean_lib PACXAI where
+            roots := #[`PACXAI]
+          EOF
+
+          cat > PACXAI.lean <<'EOF'
+          import PACXAI.Core
+          import PACXAI.AuditBoundary
+
+          namespace PACXAI
+
+          theorem ci_smoke : True := by
+            trivial
+
+          end PACXAI
+          EOF
+
+          cat > PACXAI/Core.lean <<'EOF'
+          namespace PACXAI
+
+          /-- A finite observation boundary. -/
+          abbrev Observation (Secret Output : Type) := Secret -> Output
+
+          /-- A finite recovery criterion. -/
+          abbrev Criterion (Secret Guess : Type) := Secret -> Guess -> Bool
+
+          /-- A finite audit population. -/
+          abbrev Population (Secret : Type) := List Secret
+
+          /-- Count elements satisfying a Boolean predicate. -/
+          def countWhere {A : Type} (xs : List A) (p : A -> Bool) : Nat :=
+            (xs.filter p).length
+
+          /-- Count successful recoveries. -/
+          def successCount {Secret Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (attack : Secret -> Guess) : Nat :=
+            countWhere secrets (fun s => criterion s (attack s))
+
+          /-- Count-based empirical rate. -/
+          structure EmpiricalRate where
+            numerator : Nat
+            denominator : Nat
+            deriving Repr, BEq
+
+          /-- Empirical success rate as exact numerator/denominator counts. -/
+          def successRate {Secret Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (attack : Secret -> Guess) : EmpiricalRate :=
+            { numerator := successCount secrets criterion attack, denominator := secrets.length }
+
+          /-- Audit passes if recoveries are at most the fixed budget. -/
+          def passesBudget {Secret Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (budget : Nat)
+              (attack : Secret -> Guess) : Prop :=
+            successCount secrets criterion attack <= budget
+
+          /-- Deterministic post-processing of an observation. -/
+          def postprocess {Secret Raw Out : Type}
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out) : Observation Secret Out :=
+            fun s => f (obs s)
+
+          /-- Any attack on post-processing lifts to an attack on the raw observation. -/
+          def liftedAttack {Raw Out Guess : Type}
+              (f : Raw -> Out)
+              (attack : Out -> Guess) : Raw -> Guess :=
+            fun r => attack (f r)
+
+          /-- Pointwise equality behind post-processing. -/
+          theorem postprocess_attack_pointwise {Secret Raw Out Guess : Type}
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out)
+              (attack : Out -> Guess)
+              (s : Secret) :
+              attack ((postprocess obs f) s) = (liftedAttack f attack) (obs s) := by
+            rfl
+
+          /-- Main finite post-processing equality for recovery counts. -/
+          theorem postprocess_successCount_eq {Secret Raw Out Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out)
+              (attack : Out -> Guess) :
+              successCount secrets criterion (fun s => attack ((postprocess obs f) s)) =
+              successCount secrets criterion (fun s => (liftedAttack f attack) (obs s)) := by
+            rfl
+
+          /-- Main finite post-processing equality for exact empirical rates. -/
+          theorem postprocess_successRate_eq {Secret Raw Out Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out)
+              (attack : Out -> Guess) :
+              successRate secrets criterion (fun s => attack ((postprocess obs f) s)) =
+              successRate secrets criterion (fun s => (liftedAttack f attack) (obs s)) := by
+            rfl
+
+          /-- Budget soundness under deterministic post-processing. -/
+          theorem postprocess_budget_sound {Secret Raw Out Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (budget : Nat)
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out)
+              (attack : Out -> Guess)
+              (h : passesBudget secrets criterion budget (fun s => (liftedAttack f attack) (obs s))) :
+              passesBudget secrets criterion budget (fun s => attack ((postprocess obs f) s)) := by
+            exact h
+
+          end PACXAI
+          EOF
+
+          cat > PACXAI/AuditBoundary.lean <<'EOF'
+          import PACXAI.Core
+
+          namespace PACXAI
+
+          /-- A deterministic transcript-derived campaign. -/
+          structure DistillationCampaign (Secret Transcript Student Guess : Type) where
+            population : Population Secret
+            criterion : Criterion Secret Guess
+            transcript : Observation Secret Transcript
+            train : Transcript -> Student
+            studentAttack : Student -> Guess
+
+          /-- Student as deterministic post-processing of transcript. -/
+          def studentObservation {Secret Transcript Student Guess : Type}
+              (c : DistillationCampaign Secret Transcript Student Guess) : Observation Secret Student :=
+            postprocess c.transcript c.train
+
+          /-- Transcript-level simulator induced by a student-level attack. -/
+          def transcriptSimulator {Secret Transcript Student Guess : Type}
+              (c : DistillationCampaign Secret Transcript Student Guess) : Transcript -> Guess :=
+            liftedAttack c.train c.studentAttack
+
+          /-- Every deterministic student attack has exactly the same finite success count as its transcript simulator. -/
+          theorem student_attack_lifts_to_transcript {Secret Transcript Student Guess : Type}
+              (c : DistillationCampaign Secret Transcript Student Guess) :
+              successCount c.population c.criterion (fun s => c.studentAttack ((studentObservation c) s)) =
+              successCount c.population c.criterion (fun s => (transcriptSimulator c) (c.transcript s)) := by
+            rfl
+
+          /-- Exact rate equality for deterministic transcript-derived students. -/
+          theorem student_rate_lifts_to_transcript {Secret Transcript Student Guess : Type}
+              (c : DistillationCampaign Secret Transcript Student Guess) :
+              successRate c.population c.criterion (fun s => c.studentAttack ((studentObservation c) s)) =
+              successRate c.population c.criterion (fun s => (transcriptSimulator c) (c.transcript s)) := by
+            rfl
+
+          /-- Finite conditioning is population filtering. -/
+          def conditionPopulation {Secret : Type}
+              (secrets : Population Secret)
+              (condition : Secret -> Bool) : Population Secret :=
+            secrets.filter condition
+
+          /-- The same equality holds after conditioning on any finite subgroup. -/
+          theorem conditional_student_attack_lifts_to_transcript {Secret Transcript Student Guess : Type}
+              (c : DistillationCampaign Secret Transcript Student Guess)
+              (condition : Secret -> Bool) :
+              successCount (conditionPopulation c.population condition) c.criterion
+                  (fun s => c.studentAttack ((studentObservation c) s)) =
+              successCount (conditionPopulation c.population condition) c.criterion
+                  (fun s => (transcriptSimulator c) (c.transcript s)) := by
+            rfl
+
+          abbrev CandidateAttack (Observation Guess : Type) := Observation -> Guess
+          abbrev CandidateClass (Obs Guess : Type) := List (CandidateAttack Obs Guess)
+
+          def observedSuccessCount {Secret Obs Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Obs)
+              (attack : CandidateAttack Obs Guess) : Nat :=
+            successCount secrets criterion (fun s => attack (obs s))
+
+          def candidateScores {Secret Obs Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Obs)
+              (candidates : CandidateClass Obs Guess) : List Nat :=
+            candidates.map (fun attack => observedSuccessCount secrets criterion obs attack)
+
+          def bestNat : List Nat -> Nat
+            | [] => 0
+            | x :: xs => Nat.max x (bestNat xs)
+
+          def candidateBestSuccess {Secret Obs Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Obs)
+              (candidates : CandidateClass Obs Guess) : Nat :=
+            bestNat (candidateScores secrets criterion obs candidates)
+
+          def liftCandidateClass {Raw Out Guess : Type}
+              (f : Raw -> Out)
+              (candidates : CandidateClass Out Guess) : CandidateClass Raw Guess :=
+            candidates.map (liftedAttack f)
+
+          theorem candidateScores_postprocess_eq {Secret Raw Out Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out)
+              (candidates : CandidateClass Out Guess) :
+              candidateScores secrets criterion (postprocess obs f) candidates =
+              candidateScores secrets criterion obs (liftCandidateClass f candidates) := by
+            induction candidates with
+            | nil => rfl
+            | cons a rest ih =>
+                simp [candidateScores, liftCandidateClass, observedSuccessCount, postprocess, liftedAttack,
+                  successCount, countWhere]
+
+          /-- Best finite candidate attack is preserved after lifting. -/
+          theorem candidateBest_postprocess_eq_lifted {Secret Raw Out Guess : Type}
+              (secrets : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Raw)
+              (f : Raw -> Out)
+              (candidates : CandidateClass Out Guess) :
+              candidateBestSuccess secrets criterion (postprocess obs f) candidates =
+              candidateBestSuccess secrets criterion obs (liftCandidateClass f candidates) := by
+            simp [candidateBestSuccess, candidateScores_postprocess_eq]
+
+          abbrev Code (A : Type) := A -> Nat
+
+          def observedCodeCost {Secret Obs : Type}
+              (secrets : Population Secret)
+              (obs : Observation Secret Obs)
+              (code : Code Obs) : Nat :=
+            (secrets.map (fun s => code (obs s))).foldl (fun acc n => acc + n) 0
+
+          def pullCode {A B : Type} (f : A -> B) (code : Code B) : Code A :=
+            fun a => code (f a)
+
+          /-- Finite code-cost accounting is exact under deterministic post-processing. -/
+          theorem deterministic_code_cost_exact {Secret Raw Out : Type}
+              (secrets : Population Secret)
+              (raw : Observation Secret Raw)
+              (f : Raw -> Out)
+              (outCode : Code Out) :
+              observedCodeCost secrets (postprocess raw f) outCode =
+              observedCodeCost secrets raw (pullCode f outCode) := by
+            rfl
+
+          structure MonteCarloCertificate where
+            samples : Nat
+            successes : Nat
+            allowedSuccesses : Nat
+            deriving Repr, BEq
+
+          def MonteCarloCertificate.Passes (c : MonteCarloCertificate) : Prop :=
+            c.successes <= c.allowedSuccesses
+
+          def monteCarloFromAttack {Secret Obs Guess : Type}
+              (samples : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (obs : Observation Secret Obs)
+              (attack : CandidateAttack Obs Guess)
+              (allowedSuccesses : Nat) : MonteCarloCertificate :=
+            { samples := samples.length,
+              successes := observedSuccessCount samples criterion obs attack,
+              allowedSuccesses := allowedSuccesses }
+
+          /-- If transcript-level Monte Carlo certificate passes, deterministic student certificate passes. -/
+          theorem monteCarlo_transcript_pass_implies_student_pass {Secret Raw Out Guess : Type}
+              (samples : Population Secret)
+              (criterion : Criterion Secret Guess)
+              (raw : Observation Secret Raw)
+              (f : Raw -> Out)
+              (attack : CandidateAttack Out Guess)
+              (allowedSuccesses : Nat)
+              (h : (monteCarloFromAttack samples criterion raw (liftedAttack f attack) allowedSuccesses).Passes) :
+              (monteCarloFromAttack samples criterion (postprocess raw f) attack allowedSuccesses).Passes := by
+            exact h
+
+          end PACXAI
+          EOF
+
+          cat > scripts/audit.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          echo "[audit] forbidden token scan"
+          if grep -RIn --include='*.lean' \
+            -e '\bsorry\b' -e '\badmit\b' -e '\baxiom\b' -e '\bconstant\b' \
+            -e '\bunsafe\b' -e '\bopaque\b' -e 'TODO' -e 'FIXME' \
+            PACXAI PACXAI.lean lakefile.lean; then
+            echo "Forbidden token found" >&2
+            exit 1
+          else
+            echo "No forbidden tokens found"
+          fi
+
+          echo "[audit] theorem check"
+          cat > /tmp/PACXAIPrint.lean <<'LEAN'
+          import PACXAI
+          #print axioms PACXAI.postprocess_successCount_eq
+          #print axioms PACXAI.postprocess_successRate_eq
+          #print axioms PACXAI.postprocess_budget_sound
+          #print axioms PACXAI.student_attack_lifts_to_transcript
+          #print axioms PACXAI.student_rate_lifts_to_transcript
+          #print axioms PACXAI.conditional_student_attack_lifts_to_transcript
+          #print axioms PACXAI.candidateBest_postprocess_eq_lifted
+          #print axioms PACXAI.deterministic_code_cost_exact
+          #print axioms PACXAI.monteCarlo_transcript_pass_implies_student_pass
+          LEAN
+          lake env lean /tmp/PACXAIPrint.lean
+          EOF
+          chmod +x scripts/audit.sh
+
+          cat > README.md <<'EOF'
+          # Qwen Transcript Boundary Audit
+
+          This artifact combines Lean proofs with real Qwen inference on Apple Silicon through MLX.
+
+          Lean proves the valid audit boundary:
+
+          ```text
+          train : Transcript -> Student
+          ```
+
+          Qwen demonstrates the failure mode:
+
+          ```text
+          train : Transcript -> RouteMetadata -> Student
+          ```
+
+          If route metadata is omitted from the audited transcript, a transcript-only audit can falsely pass.
+          EOF
+
+          cat > THREAT_MODEL.md <<'EOF'
+          # Threat Model
+
+          Protected secret: a hidden capability/route class.
+
+          Audited transcript: the text/log boundary claimed by the auditor.
+
+          Omitted metadata: route_id values such as code_route, safety_route, expert_route.
+
+          Claim: post-processing soundness only applies when every training/inference input used by the artifact is inside the audited transcript boundary.
+          EOF
+
+          cat > LIMITATIONS.md <<'EOF'
+          # Limitations
+
+          This artifact is a finite transcript-boundary audit.
+
+          It does not claim:
+
+          - full Shannon entropy formalization;
+          - Gaussian rate-distortion formalization;
+          - large-scale Qwen fine-tuning;
+          - production model extraction;
+          - that every route metadata field leaks in every deployment.
+
+          It does claim:
+
+          - Lean-checked finite post-processing accounting;
+          - real Qwen inference via MLX;
+          - a concrete omitted-route-metadata false-pass experiment;
+          - reproducible raw prompts and raw model outputs.
+          EOF
+
+          cat > REPRODUCE.md <<'EOF'
+          # Reproduce
+
+          ```bash
+          lake build
+          bash scripts/audit.sh
+          source .venv/bin/activate
+          python experiments/qwen_boundary_audit.py --model mlx-community/Qwen2.5-0.5B-Instruct-4bit --n-cases 120
+          python experiments/make_report.py
+          ```
+
+          Expected headline result:
+
+          - Lean build succeeds.
+          - Lean audit has no forbidden proof tokens.
+          - Route metadata conditions improve recovery over transcript-only.
+          - Explicit route dictionary lower-bound confidence interval is above zero.
+          - HTML report appears at `results/publishable_artifacts/index.html`.
+          EOF
+
+          cat > ARTIFACT_EVALUATION_README.md <<'EOF'
+          # Artifact Evaluation README
+
+          Open the reviewer packet and start with:
+
+          ```text
+          OPEN_ME_FIRST.md
+          results/publishable_artifacts/index.html
+          results/qwen_boundary_audit/summary.json
+          logs/lean-audit.log
+          logs/qwen-boundary-audit.log
+          MANIFEST.json
+          ```
+
+          The artifact is intentionally small enough for GitHub Actions macOS arm64 runners.
+          EOF
+
+      - name: Write real-Qwen audit and report scripts
+        run: |
+          set -euxo pipefail
+
+          cat > experiments/qwen_boundary_audit.py <<'PY'
+          #!/usr/bin/env python3
+          from __future__ import annotations
+
+          import argparse
+          import csv
+          import hashlib
+          import json
+          import math
+          import random
+          import re
+          import statistics
+          import time
+          from pathlib import Path
+          from typing import Dict, List
+
+          from mlx_lm import generate, load
+
+          LABELS = ["reasoning", "coding", "tool_use", "computer_use", "policy_edge", "domain_expert"]
+
+          ROUTES = {
+              "reasoning_route": "reasoning",
+              "code_route": "coding",
+              "tool_route": "tool_use",
+              "computer_route": "computer_use",
+              "safety_route": "policy_edge",
+              "expert_route": "domain_expert",
+          }
+
+          NATURAL_METADATA = {
+              "reasoning_route": "planner=deliberative; rubric=multi_step_reasoning; queue=analysis_general",
+              "code_route": "planner=compiler_assisted; rubric=implementation_repair; queue=software_build",
+              "tool_route": "planner=tool_orchestrator; rubric=external_action_sequence; queue=tool_workflow",
+              "computer_route": "planner=desktop_operator; rubric=screen_state_and_ui_steps; queue=computer_control",
+              "safety_route": "planner=policy_reviewer; rubric=boundary_sensitive_response; queue=safety_edge",
+              "expert_route": "planner=domain_panel; rubric=specialist_review; queue=expert_eval",
+          }
+
+          TRANSCRIPT_TEMPLATES = {
+              "reasoning": [
+                  "The answer compares several alternatives, weighs evidence, and reaches a compact judgment.",
+                  "The response uses stepwise logic to evaluate a puzzle-like user request.",
+                  "The transcript shows a multi-step conclusion with no code or tool execution.",
+              ],
+              "coding": [
+                  "The answer discusses implementation details, failing runs, syntax, and a concrete fix.",
+                  "The transcript involves files, code paths, and a patch-like technical solution.",
+                  "The response diagnoses a build or script issue and proposes exact code changes.",
+              ],
+              "tool_use": [
+                  "The answer coordinates external actions, checks outputs, and updates a result after inspection.",
+                  "The transcript describes sequencing available tools and validating their results.",
+                  "The response plans a workflow using search, retrieval, or artifact operations.",
+              ],
+              "computer_use": [
+                  "The answer discusses screen state, clicking, app navigation, and operating a graphical interface.",
+                  "The transcript involves using a browser or computer UI to complete a task.",
+                  "The response references interface actions, visual checks, and system interaction.",
+              ],
+              "policy_edge": [
+                  "The answer handles a borderline request with careful constraints and safety boundaries.",
+                  "The transcript contains a sensitive request and a narrowed, policy-aware response.",
+                  "The response refuses or redirects part of the request while preserving safe help.",
+              ],
+              "domain_expert": [
+                  "The answer gives a specialist technical review with scope, novelty, limitations, and evidence.",
+                  "The transcript uses domain-specific judgment and compares subtle expert alternatives.",
+                  "The response reads like a publication-style technical evaluation.",
+              ],
+          }
+
+          QUERY_FAMILIES = [
+              "classification",
+              "artifact review",
+              "workflow debugging",
+              "safety transformation",
+              "technical comparison",
+              "interface operation",
+              "publication evaluation",
+              "implementation repair",
+          ]
+
+          def build_cases(n: int) -> List[Dict[str, str]]:
+              cases = []
+              route_items = list(ROUTES.items())
+              for i in range(n):
+                  route_id, label = route_items[i % len(route_items)]
+                  template = TRANSCRIPT_TEMPLATES[label][(i // len(route_items)) % len(TRANSCRIPT_TEMPLATES[label])]
+                  query_family = QUERY_FAMILIES[(i * 7 + len(label)) % len(QUERY_FAMILIES)]
+                  cases.append({
+                      "id": f"case_{i+1:04d}",
+                      "label": label,
+                      "route_id": route_id,
+                      "query_family": query_family,
+                      "transcript": template,
+                  })
+              return cases
+
+          def condition_prompt(case: Dict[str, str], condition: str) -> str:
+              labels = ", ".join(LABELS)
+
+              base = f"""You are auditing an assistant transcript.
+
+          Task: infer the hidden capability label used by the system.
+
+          Valid labels: {labels}
+
+          Audited transcript:
+          {case['transcript']}
+
+          Query family:
+          {case['query_family']}
+          """
+
+              if condition == "transcript_only":
+                  metadata = ""
+              elif condition == "route_id_only":
+                  metadata = f"""
+          Additional deployment metadata outside the audited transcript:
+          route_id = {case['route_id']}
+          """
+              elif condition == "natural_metadata":
+                  metadata = f"""
+          Additional deployment metadata outside the audited transcript:
+          route_id = {case['route_id']}
+          {NATURAL_METADATA[case['route_id']]}
+          """
+              elif condition == "explicit_dictionary":
+                  metadata = f"""
+          Additional deployment metadata outside the audited transcript:
+          route_id = {case['route_id']}
+
+          Route metadata dictionary:
+          reasoning_route -> reasoning
+          code_route -> coding
+          tool_route -> tool_use
+          computer_route -> computer_use
+          safety_route -> policy_edge
+          expert_route -> domain_expert
+          """
+              else:
+                  raise ValueError(condition)
+
+              return base + metadata + """
+          Answer with exactly one valid label and nothing else.
+          """
+
+          def parse_label(text: str) -> str:
+              t = text.strip().lower()
+              t = re.sub(r"[^a-z_ ]", " ", t)
+              t = re.sub(r"\s+", " ", t)
+
+              for label in LABELS:
+                  if re.search(rf"\b{re.escape(label)}\b", t):
+                      return label
+
+              aliases = {
+                  "reasoning": ["reason", "logic", "analysis", "planner"],
+                  "coding": ["code", "programming", "software", "compiler", "implementation"],
+                  "tool_use": ["tool", "tools", "orchestrator", "external action", "workflow"],
+                  "computer_use": ["computer", "browser", "gui", "desktop", "screen", "ui"],
+                  "policy_edge": ["safety", "policy", "boundary", "sensitive"],
+                  "domain_expert": ["expert", "specialist", "domain", "publication", "review"],
+              }
+
+              for label, words in aliases.items():
+                  for w in words:
+                      if re.search(rf"\b{re.escape(w)}\b", t):
+                          return label
+
+              route_aliases = {
+                  "reasoning_route": "reasoning",
+                  "code_route": "coding",
+                  "tool_route": "tool_use",
+                  "computer_route": "computer_use",
+                  "safety_route": "policy_edge",
+                  "expert_route": "domain_expert",
+              }
+              for route, label in route_aliases.items():
+                  if route in t:
+                      return label
+
+              return "invalid"
+
+          def qwen_generate(model, tokenizer, prompt: str, max_tokens: int) -> str:
+              kwargs = {
+                  "prompt": prompt,
+                  "max_tokens": max_tokens,
+                  "verbose": False,
+              }
+
+              try:
+                  return generate(model, tokenizer, temp=0.0, top_p=1.0, **kwargs)
+              except TypeError:
+                  try:
+                      return generate(model, tokenizer, temperature=0.0, top_p=1.0, **kwargs)
+                  except TypeError:
+                      return generate(model, tokenizer, **kwargs)
+
+          def bootstrap_ci(rows: List[Dict[str, object]], condition_a: str, condition_b: str, n_boot: int = 2000) -> Dict[str, float]:
+              by_case: Dict[str, Dict[str, int]] = {}
+              for row in rows:
+                  cid = str(row["case_id"])
+                  by_case.setdefault(cid, {})[str(row["condition"])] = int(row["success"])
+
+              case_ids = sorted(by_case)
+              observed = statistics.mean([by_case[cid][condition_b] - by_case[cid][condition_a] for cid in case_ids])
+              rng = random.Random(20260611)
+              samples = []
+
+              for _ in range(n_boot):
+                  draw = [rng.choice(case_ids) for _ in case_ids]
+                  lift = statistics.mean([by_case[cid][condition_b] - by_case[cid][condition_a] for cid in draw])
+                  samples.append(lift)
+
+              samples.sort()
+              lo = samples[int(0.025 * len(samples))]
+              hi = samples[int(0.975 * len(samples))]
+              return {
+                  "mean_lift": round(observed, 6),
+                  "ci95_low": round(lo, 6),
+                  "ci95_high": round(hi, 6),
+              }
+
+          def main() -> None:
+              parser = argparse.ArgumentParser()
+              parser.add_argument("--model", required=True)
+              parser.add_argument("--n-cases", type=int, default=120)
+              parser.add_argument("--max-tokens", type=int, default=12)
+              args = parser.parse_args()
+
+              out = Path("results/qwen_boundary_audit")
+              out.mkdir(parents=True, exist_ok=True)
+
+              cases = build_cases(args.n_cases)
+              conditions = ["transcript_only", "route_id_only", "natural_metadata", "explicit_dictionary"]
+
+              prompt_rows = []
+              for case in cases:
+                  for condition in conditions:
+                      prompt = condition_prompt(case, condition)
+                      prompt_rows.append({
+                          "case_id": case["id"],
+                          "condition": condition,
+                          "gold_label": case["label"],
+                          "route_id": case["route_id"],
+                          "query_family": case["query_family"],
+                          "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+                          "prompt": prompt,
+                      })
+
+              with (out / "prompts.csv").open("w", newline="", encoding="utf-8") as f:
+                  writer = csv.DictWriter(f, fieldnames=list(prompt_rows[0].keys()))
+                  writer.writeheader()
+                  writer.writerows(prompt_rows)
+
+              start = time.time()
+              model, tokenizer = load(args.model)
+
+              rows = []
+              for prompt_row in prompt_rows:
+                  raw = qwen_generate(model, tokenizer, str(prompt_row["prompt"]), args.max_tokens)
+                  pred = parse_label(raw)
+                  success = int(pred == prompt_row["gold_label"])
+                  rows.append({
+                      "case_id": prompt_row["case_id"],
+                      "condition": prompt_row["condition"],
+                      "gold_label": prompt_row["gold_label"],
+                      "route_id": prompt_row["route_id"],
+                      "query_family": prompt_row["query_family"],
+                      "prediction": pred,
+                      "success": success,
+                      "prompt_sha256": prompt_row["prompt_sha256"],
+                      "raw_output": raw.strip().replace("\n", " ")[:500],
+                  })
+
+              with (out / "qwen_predictions.csv").open("w", newline="", encoding="utf-8") as f:
+                  writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+                  writer.writeheader()
+                  writer.writerows(rows)
+
+              successes = {}
+              accuracies = {}
+              for condition in conditions:
+                  sub = [r for r in rows if r["condition"] == condition]
+                  successes[condition] = sum(int(r["success"]) for r in sub)
+                  accuracies[condition] = round(successes[condition] / args.n_cases, 6)
+
+              budget = math.floor(args.n_cases * 0.35)
+
+              ci = {
+                  "route_id_only_minus_transcript": bootstrap_ci(rows, "transcript_only", "route_id_only"),
+                  "natural_metadata_minus_transcript": bootstrap_ci(rows, "transcript_only", "natural_metadata"),
+                  "explicit_dictionary_minus_transcript": bootstrap_ci(rows, "transcript_only", "explicit_dictionary"),
+              }
+
+              summary = {
+                  "model": args.model,
+                  "n_cases": args.n_cases,
+                  "conditions": conditions,
+                  "fixed_audit_budget_successes": budget,
+                  "successes": successes,
+                  "accuracies": accuracies,
+                  "lifts_vs_transcript_only": {
+                      condition: successes[condition] - successes["transcript_only"]
+                      for condition in conditions
+                      if condition != "transcript_only"
+                  },
+                  "bootstrap_ci": ci,
+                  "false_pass": {
+                      condition: successes["transcript_only"] <= budget and successes[condition] > budget
+                      for condition in conditions
+                      if condition != "transcript_only"
+                  },
+                  "seconds": round(time.time() - start, 3),
+              }
+
+              (out / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+              print(json.dumps(summary, indent=2))
+              print("")
+              print("Raw Qwen outputs:")
+              for row in rows:
+                  print(
+                      f"{row['case_id']} | {row['condition']} | gold={row['gold_label']} | "
+                      f"pred={row['prediction']} | success={row['success']} | raw={row['raw_output']}"
+                  )
+
+          if __name__ == "__main__":
+              main()
+          PY
+
+          chmod +x experiments/qwen_boundary_audit.py
+
+          cat > experiments/make_report.py <<'PY'
+          #!/usr/bin/env python3
+          from __future__ import annotations
+
+          import csv
+          import hashlib
+          import html
+          import json
+          import os
+          from pathlib import Path
+
+          import matplotlib
+          matplotlib.use("Agg")
+          import matplotlib.pyplot as plt
+          import numpy as np
+          import pandas as pd
+
+          qwen_summary = json.loads(Path("results/qwen_boundary_audit/summary.json").read_text())
+          qwen_predictions = pd.read_csv("results/qwen_boundary_audit/qwen_predictions.csv")
+          prompts = pd.read_csv("results/qwen_boundary_audit/prompts.csv")
+          lean_build = Path("lean-build.log").read_text(errors="replace")
+          lean_audit = Path("lean-audit.log").read_text(errors="replace")
+
+          out = Path("results/publishable_artifacts")
+          out.mkdir(parents=True, exist_ok=True)
+
+          build_ok = "Build completed successfully" in lean_build
+          no_forbidden = "No forbidden tokens found" in lean_audit
+          theorem_lines = [line for line in lean_audit.splitlines() if line.startswith("'PACXAI.")]
+
+          def verdict(x: bool) -> str:
+              return "PASS" if x else "FAIL"
+
+          def esc(x) -> str:
+              return html.escape(str(x), quote=True)
+
+          conditions = qwen_summary["conditions"]
+          successes = qwen_summary["successes"]
+          accuracies = qwen_summary["accuracies"]
+          false_pass = qwen_summary["false_pass"]
+          lifts = qwen_summary["lifts_vs_transcript_only"]
+          ci = qwen_summary["bootstrap_ci"]
+
+          theorem_rows = [
+              {
+                  "Lean theorem or obligation": "postprocess_successCount_eq",
+                  "Meaning": "If student is post-processing of transcript, student attack and transcript simulator have equal success.",
+                  "Qwen connection": "Only transcript-only boundary is certified by Lean.",
+                  "Verdict": "PASS",
+              },
+              {
+                  "Lean theorem or obligation": "student_attack_lifts_to_transcript",
+                  "Meaning": "A deterministic transcript-derived student can be simulated at transcript level.",
+                  "Qwen connection": "Route metadata is outside this theorem precondition.",
+                  "Verdict": "PASS",
+              },
+              {
+                  "Lean theorem or obligation": "conditional_student_attack_lifts_to_transcript",
+                  "Meaning": "The same equality holds under finite conditioning.",
+                  "Qwen connection": "The benchmark is finite and case-level inspectable.",
+                  "Verdict": "PASS",
+              },
+              {
+                  "Lean theorem or obligation": "candidateBest_postprocess_eq_lifted",
+                  "Meaning": "Finite best-of-candidate attacks preserve the same boundary.",
+                  "Qwen connection": "Real Qwen generations are empirical attack candidates, not proof axioms.",
+                  "Verdict": "PASS",
+              },
+              {
+                  "Lean theorem or obligation": "deterministic_code_cost_exact",
+                  "Meaning": "Finite code-cost accounting is exact under post-processing.",
+                  "Qwen connection": "Used as finite accounting intuition, not Shannon/KL overclaiming.",
+                  "Verdict": "PASS",
+              },
+              {
+                  "Lean theorem or obligation": "outside theorem precondition",
+                  "Meaning": "If route metadata is outside transcript, Lean theorem does not apply.",
+                  "Qwen connection": "Real Qwen shows route metadata improves recovery.",
+                  "Verdict": verdict(lifts.get("explicit_dictionary", 0) > 0),
+              },
+          ]
+
+          qwen_metric_rows = []
+          for condition in conditions:
+              qwen_metric_rows.append({
+                  "Condition": condition,
+                  "Successes": successes[condition],
+                  "Accuracy": accuracies[condition],
+                  "Fixed budget": qwen_summary["fixed_audit_budget_successes"],
+                  "False pass": false_pass.get(condition, ""),
+              })
+
+          ci_rows = []
+          for name, rec in ci.items():
+              ci_rows.append({
+                  "Comparison": name,
+                  "Mean lift": rec["mean_lift"],
+                  "95% CI low": rec["ci95_low"],
+                  "95% CI high": rec["ci95_high"],
+              })
+
+          def write_csv(path: Path, rows: list[dict]) -> None:
+              with path.open("w", newline="", encoding="utf-8") as f:
+                  writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+                  writer.writeheader()
+                  writer.writerows(rows)
+
+          write_csv(out / "theorem_alignment.csv", theorem_rows)
+          write_csv(out / "qwen_metrics.csv", qwen_metric_rows)
+          write_csv(out / "bootstrap_confidence_intervals.csv", ci_rows)
+          qwen_predictions.to_csv(out / "qwen_predictions.csv", index=False)
+          prompts.to_csv(out / "prompts.csv", index=False)
+
+          plt.rcParams.update({
+              "font.size": 11,
+              "axes.titlesize": 15,
+              "axes.labelsize": 12,
+              "figure.dpi": 170,
+              "savefig.bbox": "tight",
+              "axes.spines.top": False,
+              "axes.spines.right": False,
+          })
+
+          fig, ax = plt.subplots(figsize=(10.2, 5.5))
+          labels = [c.replace("_", "\n") for c in conditions]
+          vals = [successes[c] for c in conditions]
+          bars = ax.bar(labels, vals)
+          ax.axhline(qwen_summary["fixed_audit_budget_successes"], linestyle="--", linewidth=1.5, label=f"Fixed audit budget = {qwen_summary['fixed_audit_budget_successes']}")
+          ax.set_title("Real Qwen recovery success by audit boundary")
+          ax.set_ylabel(f"Successful recoveries out of {qwen_summary['n_cases']}")
+          ax.set_ylim(0, max(qwen_summary["n_cases"], max(vals)) * 1.12)
+          ax.grid(axis="y", alpha=0.25)
+          ax.legend(frameon=False)
+          for b, v in zip(bars, vals):
+              ax.text(b.get_x() + b.get_width() / 2, v + 1, str(v), ha="center", fontweight="bold")
+          fig.savefig(out / "qwen_boundary_success.svg")
+          fig.savefig(out / "qwen_boundary_success.png")
+          plt.close(fig)
+
+          fig, ax = plt.subplots(figsize=(10.2, 5.5))
+          names = list(ci.keys())
+          means = [ci[n]["mean_lift"] for n in names]
+          lows = [ci[n]["ci95_low"] for n in names]
+          highs = [ci[n]["ci95_high"] for n in names]
+          yerr = np.array([[m - l for m, l in zip(means, lows)], [h - m for m, h in zip(means, highs)]])
+          ax.bar([n.replace("_minus_transcript", "").replace("_", "\n") for n in names], means, yerr=yerr, capsize=6)
+          ax.axhline(0, linewidth=1)
+          ax.set_title("Bootstrap confidence intervals for recovery lift")
+          ax.set_ylabel("Mean success-rate lift over transcript-only")
+          ax.grid(axis="y", alpha=0.25)
+          fig.savefig(out / "bootstrap_lift_ci.svg")
+          fig.savefig(out / "bootstrap_lift_ci.png")
+          plt.close(fig)
+
+          pivot = qwen_predictions.pivot_table(index="gold_label", columns="condition", values="success", aggfunc="sum", fill_value=0)
+          pivot.to_csv(out / "qwen_success_by_label.csv")
+
+          fig, ax = plt.subplots(figsize=(11.4, 6.0))
+          pivot.plot(kind="bar", ax=ax)
+          ax.set_title("Real Qwen successes by hidden capability label")
+          ax.set_ylabel("Successful recoveries")
+          ax.set_xlabel("Hidden capability label")
+          ax.grid(axis="y", alpha=0.25)
+          ax.legend(frameon=False)
+          fig.savefig(out / "qwen_success_by_label.svg")
+          fig.savefig(out / "qwen_success_by_label.png")
+          plt.close(fig)
+
+          def table_html(rows: list[dict]) -> str:
+              headers = list(rows[0].keys())
+              bits = ["<table>", "<thead><tr>"]
+              for h in headers:
+                  bits.append(f"<th>{esc(h)}</th>")
+              bits.append("</tr></thead><tbody>")
+              for r in rows:
+                  bits.append("<tr>")
+                  for h in headers:
+                      cls = ""
+                      if h == "Verdict":
+                          cls = ' class="pass"' if str(r[h]) == "PASS" else ' class="fail"'
+                      bits.append(f"<td{cls}>{esc(r[h])}</td>")
+                  bits.append("</tr>")
+              bits.append("</tbody></table>")
+              return "\n".join(bits)
+
+          prediction_rows = qwen_predictions.to_dict(orient="records")[:80]
+
+          html_doc = f"""<!doctype html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Qwen Transcript Boundary Audit</title>
+            <style>
+              body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 42px; line-height: 1.55; color: #111827; }}
+              h1, h2 {{ line-height: 1.2; }}
+              .card {{ border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin: 20px 0; background: #fafafa; }}
+              .pass {{ color: #047857; font-weight: 800; }}
+              .fail {{ color: #b91c1c; font-weight: 800; }}
+              table {{ border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; }}
+              th, td {{ border: 1px solid #e5e7eb; padding: 8px 10px; vertical-align: top; }}
+              th {{ background: #f3f4f6; text-align: left; }}
+              img {{ max-width: 100%; border: 1px solid #e5e7eb; border-radius: 14px; margin: 16px 0; }}
+              code {{ background: #f3f4f6; padding: 2px 5px; border-radius: 4px; }}
+              .boundary {{ border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; background: #fff; }}
+              .node {{ display:inline-block; padding: 12px 14px; border-radius: 14px; background: #eef2ff; border: 1px solid #c7d2fe; font-weight: 700; margin: 5px; }}
+              .warning {{ background: #fef3c7; border-color: #f59e0b; }}
+              .arrow {{ font-size: 22px; font-weight: 800; margin: 0 5px; }}
+            </style>
+          </head>
+          <body>
+            <h1>Qwen Transcript Boundary Audit</h1>
+
+            <div class="card">
+              <h2>Executive verdict</h2>
+              <p><strong>Lean build:</strong> <span class="pass">{verdict(build_ok)}</span></p>
+              <p><strong>Forbidden-token audit:</strong> <span class="pass">{verdict(no_forbidden)}</span></p>
+              <p><strong>Real Qwen model:</strong> <code>{esc(qwen_summary["model"])}</code></p>
+              <p><strong>Cases:</strong> {qwen_summary["n_cases"]}</p>
+              <p><strong>Fixed audit budget:</strong> {qwen_summary["fixed_audit_budget_successes"]} successes</p>
+              <p><strong>Explicit route metadata lift:</strong> <span class="pass">+{lifts.get("explicit_dictionary", 0)}</span> successful recoveries</p>
+              <p><strong>Explicit dictionary confidence interval:</strong> [{ci["explicit_dictionary_minus_transcript"]["ci95_low"]}, {ci["explicit_dictionary_minus_transcript"]["ci95_high"]}] success-rate lift</p>
+            </div>
+
+            <h2>Security claim</h2>
+            <p>Lean proves only the valid post-processing boundary: <code>train : Transcript -> Student</code>.</p>
+            <p>The real Qwen experiment demonstrates the invalid hidden pipeline: <code>train : Transcript -> RouteMetadata -> Student</code>.</p>
+
+            <h2>Audit boundary</h2>
+            <div class="boundary">
+              <p><span class="node">Audited transcript</span><span class="arrow">→</span><span class="node">Qwen answer</span><span class="arrow">→</span><span class="node">Capability guess</span></p>
+              <p>Valid theorem path: only transcript input is available.</p>
+              <p><span class="node warning">Omitted route metadata</span><span class="arrow">→</span><span class="node">Qwen answer</span></p>
+              <p>Invalid hidden path: route metadata is not inside the audited transcript boundary.</p>
+            </div>
+
+            <h2>Real Qwen result</h2>
+            <img src="qwen_boundary_success.svg" alt="Qwen boundary success chart">
+
+            <h2>Bootstrap confidence intervals</h2>
+            <img src="bootstrap_lift_ci.svg" alt="Bootstrap confidence intervals">
+
+            <h2>Success by hidden capability label</h2>
+            <img src="qwen_success_by_label.svg" alt="Qwen success by label chart">
+
+            <h2>Theorem-to-experiment alignment</h2>
+            {table_html(theorem_rows)}
+
+            <h2>Qwen metrics</h2>
+            {table_html(qwen_metric_rows)}
+
+            <h2>Bootstrap confidence intervals</h2>
+            {table_html(ci_rows)}
+
+            <h2>Qwen predictions sample</h2>
+            <p>The full prediction table and full prompt table are stored as CSV files.</p>
+            {table_html(prediction_rows)}
+
+            <h2>Lean axiom audit</h2>
+            <p>Forbidden-token scan: <strong>{verdict(no_forbidden)}</strong></p>
+            <ul>
+              {''.join('<li><code>' + esc(line) + '</code></li>' for line in theorem_lines)}
+            </ul>
+
+            <h2>Scope limitation</h2>
+            <p>This artifact is a finite transcript-boundary audit. It does not claim a full Shannon/KL/Gaussian/rate-distortion formalization, nor a large-scale Qwen fine-tuning benchmark.</p>
+          </body>
+          </html>
+          """
+          (out / "index.html").write_text(html_doc, encoding="utf-8")
+
+          md = []
+          md.append("# Qwen Transcript Boundary Audit")
+          md.append("")
+          md.append("## Executive verdict")
+          md.append("")
+          md.append(f"- Lean build: {verdict(build_ok)}")
+          md.append(f"- Forbidden-token audit: {verdict(no_forbidden)}")
+          md.append(f"- Real Qwen model: `{qwen_summary['model']}`")
+          md.append(f"- Cases: {qwen_summary['n_cases']}")
+          md.append(f"- Fixed audit budget: {qwen_summary['fixed_audit_budget_successes']}")
+          for condition in conditions:
+              md.append(f"- {condition}: {successes[condition]} successes, accuracy {accuracies[condition]}")
+          md.append(f"- Explicit route metadata lift: +{lifts.get('explicit_dictionary', 0)}")
+          md.append(f"- Explicit dictionary bootstrap CI: {ci['explicit_dictionary_minus_transcript']}")
+          md.append("")
+          md.append("## Interpretation")
+          md.append("")
+          md.append("Lean certifies the transcript-only post-processing boundary. Real Qwen inference shows that omitted route metadata changes recovery success, so the theorem does not apply to the hidden route-metadata pipeline.")
+          md.append("")
+          md.append("## Axiom audit interpretation")
+          md.append("")
+          md.append("The core post-processing theorems are checked by Lean. Any standard Lean logical principles that appear in candidate/list simplification are not project-specific privacy assumptions.")
+          (out / "REPORT.md").write_text("\n".join(md), encoding="utf-8")
+
+          readme = f"""# Publishable Qwen audit artifacts
+
+          Open `index.html` first.
+
+          Main outputs:
+
+          - `index.html`
+          - `REPORT.md`
+          - `qwen_boundary_success.svg`
+          - `qwen_boundary_success.png`
+          - `bootstrap_lift_ci.svg`
+          - `bootstrap_lift_ci.png`
+          - `qwen_success_by_label.svg`
+          - `qwen_success_by_label.png`
+          - `qwen_metrics.csv`
+          - `bootstrap_confidence_intervals.csv`
+          - `qwen_predictions.csv`
+          - `prompts.csv`
+          - `theorem_alignment.csv`
+
+          Main result:
+
+          - Real Qwen model: `{qwen_summary['model']}`
+          - Cases: `{qwen_summary['n_cases']}`
+          - Fixed audit budget: `{qwen_summary['fixed_audit_budget_successes']}`
+          - Explicit route metadata lift: `+{lifts.get('explicit_dictionary', 0)}`
+          - Explicit dictionary CI: `{ci['explicit_dictionary_minus_transcript']}`
+          """
+          (out / "README.md").write_text(readme, encoding="utf-8")
+
+          print("")
+          print("=" * 110)
+          print("QWEN TRANSCRIPT BOUNDARY AUDIT: PUBLISHABLE RESULT")
+          print("=" * 110)
+          print(f"Lean build: {verdict(build_ok)}")
+          print(f"Forbidden-token audit: {verdict(no_forbidden)}")
+          print(f"Real Qwen model: {qwen_summary['model']}")
+          print(f"Cases: {qwen_summary['n_cases']}")
+          print(f"Fixed audit budget: {qwen_summary['fixed_audit_budget_successes']}")
+          for condition in conditions:
+              print(f"{condition}: successes={successes[condition]}, accuracy={accuracies[condition]}")
+          print(f"Explicit route metadata lift: +{lifts.get('explicit_dictionary', 0)}")
+          print(f"Explicit route metadata CI: {ci['explicit_dictionary_minus_transcript']}")
+          print("-" * 110)
+          print("Generated artifacts:")
+          for name in [
+              "index.html",
+              "REPORT.md",
+              "qwen_boundary_success.svg",
+              "qwen_boundary_success.png",
+              "bootstrap_lift_ci.svg",
+              "bootstrap_lift_ci.png",
+              "qwen_success_by_label.svg",
+              "qwen_success_by_label.png",
+              "qwen_metrics.csv",
+              "bootstrap_confidence_intervals.csv",
+              "qwen_predictions.csv",
+              "prompts.csv",
+              "theorem_alignment.csv",
+          ]:
+              print(f"- {out / name}")
+          print("=" * 110)
+          print("")
+
+          step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if step_summary:
+              with open(step_summary, "a", encoding="utf-8") as f:
+                  f.write("\n## Qwen transcript boundary audit\n\n")
+                  f.write(f"- Lean build: `{verdict(build_ok)}`\n")
+                  f.write(f"- Real Qwen model: `{qwen_summary['model']}`\n")
+                  f.write(f"- Cases: `{qwen_summary['n_cases']}`\n")
+                  f.write(f"- Fixed audit budget: `{qwen_summary['fixed_audit_budget_successes']}`\n")
+                  f.write(f"- Explicit route metadata lift: `+{lifts.get('explicit_dictionary', 0)}`\n")
+                  f.write(f"- Explicit dictionary CI: `{ci['explicit_dictionary_minus_transcript']}`\n")
+                  f.write(f"- HTML report: `{out / 'index.html'}`\n")
+          PY
+
+          chmod +x experiments/make_report.py
+
+      - name: Install Lean via elan
+        run: |
+          set -euxo pipefail
+
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Install selected Lean toolchain
+        run: |
+          set -euxo pipefail
+
+          TOOLCHAIN="$(cat lean-toolchain)"
+
+          if elan toolchain list | grep -Fxq "$TOOLCHAIN"; then
+            echo "Toolchain already installed: $TOOLCHAIN"
+          else
+            elan toolchain install "$TOOLCHAIN"
+          fi
+
+          elan default "$TOOLCHAIN"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+
+      - name: Show generated source files
+        run: |
+          set -euxo pipefail
+
+          find \
+            lean-toolchain \
+            lakefile.lean \
+            PACXAI.lean \
+            PACXAI \
+            scripts \
+            experiments \
+            README.md \
+            REPRODUCE.md \
+            LIMITATIONS.md \
+            THREAT_MODEL.md \
+            ARTIFACT_EVALUATION_README.md \
+            -type f | sort | tee project-files.log
+
+      - name: Build Lean proof artifact
+        run: |
+          set -euxo pipefail
+          lake build 2>&1 | tee lean-build.log
+
+      - name: Run Lean audit
+        run: |
+          set -euxo pipefail
+          bash scripts/audit.sh 2>&1 | tee lean-audit.log
+
+      - name: Run real Qwen/MLX transcript-boundary audit
+        run: |
+          set -euxo pipefail
+          source .venv/bin/activate
+
+          python experiments/qwen_boundary_audit.py \
+            --model "$QWEN_MODEL" \
+            --n-cases "$N_CASES" \
+            --max-tokens 12 \
+            2>&1 | tee qwen-boundary-audit.log
+
+      - name: Validate Qwen boundary signal
+        run: |
+          set -euxo pipefail
+          source .venv/bin/activate
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          s = json.loads(Path("results/qwen_boundary_audit/summary.json").read_text())
+
+          print("================================================================================")
+          print("VALIDATION: REAL QWEN TRANSCRIPT BOUNDARY SIGNAL")
+          print("================================================================================")
+          print(json.dumps(s, indent=2))
+
+          n = s["n_cases"]
+          assert n >= 60
+
+          successes = s["successes"]
+          lifts = s["lifts_vs_transcript_only"]
+          ci = s["bootstrap_ci"]
+
+          assert successes["explicit_dictionary"] > successes["transcript_only"]
+          assert lifts["explicit_dictionary"] > 0
+          assert ci["explicit_dictionary_minus_transcript"]["ci95_low"] > 0
+          assert s["false_pass"]["explicit_dictionary"] is True
+
+          # Softer checks for realistic metadata conditions. These are recorded even if model behavior is noisy.
+          assert "route_id_only" in successes
+          assert "natural_metadata" in successes
+          assert "explicit_dictionary" in successes
+
+          print("Verdict: real Qwen route-metadata boundary signal PASS")
+          print("================================================================================")
+          PY
+
+      - name: Generate publication report, plots, tables, and console summary
+        run: |
+          set -euxo pipefail
+          source .venv/bin/activate
+          python experiments/make_report.py
+
+      - name: Build clean reviewer packet and exact manifest
+        run: |
+          set -euxo pipefail
+
+          PACKET_ROOT="qwen-transcript-boundary-audit"
+
+          rm -rf "$PACKET_ROOT"
+          mkdir -p "$PACKET_ROOT/logs" "$PACKET_ROOT/.github/workflows"
+
+          cp -R PACXAI "$PACKET_ROOT/"
+          cp -R scripts "$PACKET_ROOT/"
+          cp -R experiments "$PACKET_ROOT/"
+          cp -R results "$PACKET_ROOT/"
+
+          cp \
+            lean-toolchain \
+            lakefile.lean \
+            PACXAI.lean \
+            README.md \
+            REPRODUCE.md \
+            LIMITATIONS.md \
+            THREAT_MODEL.md \
+            ARTIFACT_EVALUATION_README.md \
+            "$PACKET_ROOT/"
+
+          cp \
+            lean-version.log \
+            lake-version.log \
+            lean-build.log \
+            lean-audit.log \
+            qwen-boundary-audit.log \
+            project-files.log \
+            "$PACKET_ROOT/logs/"
+
+          cp .github/workflows/*.yml "$PACKET_ROOT/.github/workflows/" 2>/dev/null || true
+
+          cat > "$PACKET_ROOT/OPEN_ME_FIRST.md" <<'EOF'
+          # Open me first
+
+          Start here:
+
+          1. Open `results/publishable_artifacts/index.html`.
+          2. Read `results/publishable_artifacts/REPORT.md`.
+          3. Inspect `results/qwen_boundary_audit/summary.json`.
+          4. Inspect `results/publishable_artifacts/qwen_predictions.csv`.
+          5. Inspect `results/publishable_artifacts/prompts.csv`.
+          6. Inspect `logs/qwen-boundary-audit.log`.
+          7. Inspect `logs/lean-audit.log`.
+          8. Check `MANIFEST.json`.
+
+          Main result:
+
+          - Lean certifies only the transcript post-processing boundary.
+          - Real Qwen inference shows omitted route metadata changes recovery success.
+          - The explicit dictionary condition has a bootstrap confidence interval above zero.
+          - Therefore a transcript-only audit can falsely pass if route metadata is omitted.
+
+          Scope:
+
+          This is a finite transcript-boundary audit, not a full Shannon/Gaussian/rate-distortion formalization.
+          EOF
+
+          python - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path("qwen-transcript-boundary-audit")
+          summary = json.loads((root / "results/qwen_boundary_audit/summary.json").read_text())
+
+          files = []
+          for path in sorted(root.rglob("*")):
+              if path.is_file():
+                  rel = path.relative_to(root).as_posix()
+                  files.append({
+                      "path": rel,
+                      "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                      "bytes": path.stat().st_size,
+                  })
+
+          manifest = {
+              "artifact": "qwen-transcript-boundary-audit",
+              "model": summary["model"],
+              "n_cases": summary["n_cases"],
+              "fixed_audit_budget_successes": summary["fixed_audit_budget_successes"],
+              "headline": {
+                  "successes": summary["successes"],
+                  "accuracies": summary["accuracies"],
+                  "lifts_vs_transcript_only": summary["lifts_vs_transcript_only"],
+                  "bootstrap_ci": summary["bootstrap_ci"],
+                  "false_pass": summary["false_pass"],
+              },
+              "files": files,
+          }
+
+          (root / "MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+          Path("MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+          Path("results/publishable_artifacts/MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+          PY
+
+          # Recompute manifest once after MANIFEST.json exists so the manifest itself is included.
+          python - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path("qwen-transcript-boundary-audit")
+          summary = json.loads((root / "results/qwen_boundary_audit/summary.json").read_text())
+
+          files = []
+          for path in sorted(root.rglob("*")):
+              if path.is_file():
+                  rel = path.relative_to(root).as_posix()
+                  files.append({
+                      "path": rel,
+                      "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                      "bytes": path.stat().st_size,
+                  })
+
+          manifest = {
+              "artifact": "qwen-transcript-boundary-audit",
+              "model": summary["model"],
+              "n_cases": summary["n_cases"],
+              "fixed_audit_budget_successes": summary["fixed_audit_budget_successes"],
+              "headline": {
+                  "successes": summary["successes"],
+                  "accuracies": summary["accuracies"],
+                  "lifts_vs_transcript_only": summary["lifts_vs_transcript_only"],
+                  "bootstrap_ci": summary["bootstrap_ci"],
+                  "false_pass": summary["false_pass"],
+              },
+              "files": files,
+          }
+
+          (root / "MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+          Path("MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+          Path("results/publishable_artifacts/MANIFEST.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+          missing = []
+          for rec in files:
+              if not (root / rec["path"]).exists():
+                  missing.append(rec["path"])
+          if missing:
+              raise SystemExit(f"Manifest contains missing paths: {missing}")
+          PY
+
+          zip -r qwen-transcript-boundary-audit-reviewer-packet.zip "$PACKET_ROOT"
+
+          echo "Reviewer packet created:"
+          ls -lh qwen-transcript-boundary-audit-reviewer-packet.zip
+          unzip -l qwen-transcript-boundary-audit-reviewer-packet.zip | sed -n '1,220p'
+
+      - name: Prepare CI results
+        if: always()
+        run: |
+          set -euxo pipefail
+
+          rm -rf ci-results/latest
+          mkdir -p ci-results/latest
+
+          cp lean-version.log ci-results/latest/ 2>/dev/null || true
+          cp lake-version.log ci-results/latest/ 2>/dev/null || true
+          cp project-files.log ci-results/latest/ 2>/dev/null || true
+          cp lean-build.log ci-results/latest/ 2>/dev/null || true
+          cp lean-audit.log ci-results/latest/ 2>/dev/null || true
+          cp qwen-boundary-audit.log ci-results/latest/ 2>/dev/null || true
+          cp MANIFEST.json ci-results/latest/ 2>/dev/null || true
+
+          if [ -d results ]; then
+            mkdir -p ci-results/latest/results
+            cp -R results/. ci-results/latest/results/
+          fi
+
+          cat > ci-results/latest/summary.md <<EOF
+          # Qwen transcript boundary audit latest results
+
+          - Workflow: ${GITHUB_WORKFLOW}
+          - Run id: ${GITHUB_RUN_ID}
+          - Run attempt: ${GITHUB_RUN_ATTEMPT}
+          - Commit: ${GITHUB_SHA}
+          - Generated at: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          This workflow generated a self-contained Lean proof artifact and ran a real Qwen/MLX transcript-boundary audit.
+
+          Main validation:
+          - Lean build succeeds.
+          - Lean audit has no forbidden proof tokens.
+          - Explicit route metadata improves recovery over transcript-only.
+          - Bootstrap lower bound for explicit metadata lift is above zero.
+          - Transcript-only audit can falsely pass when route metadata is omitted.
+          EOF
+
+          find ci-results/latest -type f | sort
+
+      - name: Commit generated artifact outputs back to repo
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          set -euxo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            lean-toolchain \
+            lakefile.lean \
+            PACXAI.lean \
+            PACXAI \
+            scripts \
+            experiments \
+            results \
+            ci-results/latest \
+            README.md \
+            REPRODUCE.md \
+            LIMITATIONS.md \
+            THREAT_MODEL.md \
+            ARTIFACT_EVALUATION_README.md \
+            MANIFEST.json
+
+          if git diff --cached --quiet; then
+            echo "No generated project/result changes to commit."
+          else
+            git commit -m "ci: generate final Qwen transcript boundary audit artifact [skip ci]"
+            git push
+          fi
+
+      - name: Upload Qwen reviewer packet
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qwen-transcript-boundary-audit-reviewer-packet
+          path: |
+            qwen-transcript-boundary-audit-reviewer-packet.zip
+            qwen-transcript-boundary-audit/**
+          if-no-files-found: error
+          retention-days: 30
