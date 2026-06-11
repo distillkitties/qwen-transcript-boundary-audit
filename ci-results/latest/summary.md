@@ -1,10 +1,10 @@
 # Qwen transcript boundary audit latest results
 
 - Workflow: Qwen Transcript Boundary Audit Fixed
-- Run id: 27329317325
+- Run id: 27330430937
 - Run attempt: 1
-- Commit: e84bb16235d315f0ac56495857ef599447991301
-- Generated at: 2026-06-11T06:57:52Z
+- Commit: 2a1a69769c8f8095aa986ff5b48ce562f8032d74
+- Generated at: 2026-06-11T07:21:36Z
 
 Main validation:
 - Lean build succeeds.
