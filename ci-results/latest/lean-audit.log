@@ -1,0 +1,12 @@
+[audit] forbidden token scan
+No forbidden tokens found
+[audit] theorem check
+'PACXAI.postprocess_successCount_eq' does not depend on any axioms
+'PACXAI.postprocess_successRate_eq' does not depend on any axioms
+'PACXAI.postprocess_budget_sound' does not depend on any axioms
+'PACXAI.student_attack_lifts_to_transcript' does not depend on any axioms
+'PACXAI.student_rate_lifts_to_transcript' does not depend on any axioms
+'PACXAI.conditional_student_attack_lifts_to_transcript' does not depend on any axioms
+'PACXAI.candidateBest_postprocess_eq_lifted' depends on axioms: [propext, Quot.sound]
+'PACXAI.deterministic_code_cost_exact' does not depend on any axioms
+'PACXAI.monteCarlo_transcript_pass_implies_student_pass' does not depend on any axioms

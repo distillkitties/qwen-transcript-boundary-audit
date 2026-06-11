@@ -1,0 +1,4 @@
+Comparison,Mean lift,95% CI low,95% CI high
+route_id_only_minus_transcript,0.075,0,0.15
+natural_metadata_minus_transcript,0.016667,-0.041667,0.083333
+forced_route_metadata_minus_transcript,-0.041667,-0.091667,0.008333

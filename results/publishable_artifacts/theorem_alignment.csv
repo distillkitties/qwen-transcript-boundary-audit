@@ -1,0 +1,4 @@
+Lean theorem or obligation,Meaning,Qwen connection,Verdict
+postprocess_successCount_eq,"If student is post-processing of transcript, student attack and transcript simulator have equal success.",Only transcript-only boundary is certified by Lean.,PASS
+student_attack_lifts_to_transcript,A deterministic transcript-derived student can be simulated at transcript level.,Route metadata is outside this theorem precondition.,PASS
+outside theorem precondition,"If route metadata is outside transcript, Lean theorem does not apply.",Real Qwen shows at least one metadata condition improves recovery.,PASS

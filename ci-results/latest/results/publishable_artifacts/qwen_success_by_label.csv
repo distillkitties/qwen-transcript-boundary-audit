@@ -1,0 +1,7 @@
+gold_label,forced_route_metadata,natural_metadata,route_id_only,transcript_only
+coding,0,0,0,2
+computer_use,0,0,0,0
+domain_expert,0,7,0,1
+policy_edge,0,0,0,2
+reasoning,20,20,20,18
+tool_use,0,0,14,2

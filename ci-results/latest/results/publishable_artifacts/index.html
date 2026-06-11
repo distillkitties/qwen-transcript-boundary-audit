@@ -1,0 +1,1046 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Qwen Transcript Boundary Audit</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 42px; line-height: 1.55; color: #111827; }
+    h1, h2 { line-height: 1.2; }
+    .card { border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin: 20px 0; background: #fafafa; }
+    .pass { color: #047857; font-weight: 800; }
+    .fail { color: #b91c1c; font-weight: 800; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px 10px; vertical-align: top; }
+    th { background: #f3f4f6; text-align: left; }
+    img { max-width: 100%; border: 1px solid #e5e7eb; border-radius: 14px; margin: 16px 0; }
+    code { background: #f3f4f6; padding: 2px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Qwen Transcript Boundary Audit</h1>
+
+  <div class="card">
+    <h2>Executive verdict</h2>
+    <p><strong>Lean build:</strong> <span class="pass">PASS</span></p>
+    <p><strong>Forbidden-token audit:</strong> <span class="pass">PASS</span></p>
+    <p><strong>Real Qwen model:</strong> <code>mlx-community/Qwen2.5-0.5B-Instruct-4bit</code></p>
+    <p><strong>Cases:</strong> 120</p>
+    <p><strong>Fixed audit budget:</strong> 30</p>
+    <p><strong>Best metadata condition:</strong> <span class="pass">route_id_only</span></p>
+    <p><strong>Best metadata-condition lift:</strong> <span class="pass">+9</span></p>
+    <p><strong>Best metadata-condition CI:</strong> {&#x27;mean_lift&#x27;: 0.075, &#x27;ci95_low&#x27;: 0, &#x27;ci95_high&#x27;: 0.15}</p>
+  </div>
+
+  <h2>Security claim</h2>
+  <p>Lean proves the valid boundary: <code>train : Transcript -> Student</code>.</p>
+  <p>Qwen demonstrates the invalid hidden pipeline: <code>train : Transcript -> RouteMetadata -> Student</code>.</p>
+
+  <h2>Qwen boundary success</h2>
+  <img src="qwen_boundary_success.svg" alt="Qwen success chart">
+
+  <h2>Bootstrap confidence intervals</h2>
+  <img src="bootstrap_lift_ci.svg" alt="Bootstrap CI chart">
+
+  <h2>Success by hidden capability</h2>
+  <img src="qwen_success_by_label.svg" alt="Qwen success by label">
+
+  <h2>Theorem alignment</h2>
+  <table>
+<thead><tr>
+<th>Lean theorem or obligation</th>
+<th>Meaning</th>
+<th>Qwen connection</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>postprocess_successCount_eq</td>
+<td>If student is post-processing of transcript, student attack and transcript simulator have equal success.</td>
+<td>Only transcript-only boundary is certified by Lean.</td>
+<td class="pass">PASS</td>
+</tr>
+<tr>
+<td>student_attack_lifts_to_transcript</td>
+<td>A deterministic transcript-derived student can be simulated at transcript level.</td>
+<td>Route metadata is outside this theorem precondition.</td>
+<td class="pass">PASS</td>
+</tr>
+<tr>
+<td>outside theorem precondition</td>
+<td>If route metadata is outside transcript, Lean theorem does not apply.</td>
+<td>Real Qwen shows at least one metadata condition improves recovery.</td>
+<td class="pass">PASS</td>
+</tr>
+</tbody></table>
+
+  <h2>Qwen metrics</h2>
+  <table>
+<thead><tr>
+<th>Condition</th>
+<th>Successes</th>
+<th>Accuracy</th>
+<th>Fixed budget</th>
+<th>False pass</th>
+</tr></thead><tbody>
+<tr>
+<td>transcript_only</td>
+<td>25</td>
+<td>0.208333</td>
+<td>30</td>
+<td></td>
+</tr>
+<tr>
+<td>route_id_only</td>
+<td>34</td>
+<td>0.283333</td>
+<td>30</td>
+<td>True</td>
+</tr>
+<tr>
+<td>natural_metadata</td>
+<td>27</td>
+<td>0.225</td>
+<td>30</td>
+<td>False</td>
+</tr>
+<tr>
+<td>forced_route_metadata</td>
+<td>20</td>
+<td>0.166667</td>
+<td>30</td>
+<td>False</td>
+</tr>
+</tbody></table>
+
+  <h2>Bootstrap confidence intervals</h2>
+  <table>
+<thead><tr>
+<th>Comparison</th>
+<th>Mean lift</th>
+<th>95% CI low</th>
+<th>95% CI high</th>
+</tr></thead><tbody>
+<tr>
+<td>route_id_only_minus_transcript</td>
+<td>0.075</td>
+<td>0</td>
+<td>0.15</td>
+</tr>
+<tr>
+<td>natural_metadata_minus_transcript</td>
+<td>0.016667</td>
+<td>-0.041667</td>
+<td>0.083333</td>
+</tr>
+<tr>
+<td>forced_route_metadata_minus_transcript</td>
+<td>-0.041667</td>
+<td>-0.091667</td>
+<td>0.008333</td>
+</tr>
+</tbody></table>
+
+  <h2>Sample predictions</h2>
+  <table>
+<thead><tr>
+<th>case_id</th>
+<th>condition</th>
+<th>gold_label</th>
+<th>route_id</th>
+<th>query_family</th>
+<th>prediction</th>
+<th>success</th>
+<th>prompt_sha256</th>
+<th>raw_output</th>
+</tr></thead><tbody>
+<tr>
+<td>case_0001</td>
+<td>transcript_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>1</td>
+<td>829ab5c558ee09e08dbba4f8855c745431c10db32ce555c4eb833d5982792f53</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0001</td>
+<td>route_id_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>1</td>
+<td>c265e6ba494cae822cdff84ebc55197215538c174a39cf8245f937df78528e9a</td>
+<td>Reasoning: The response compares alternatives, weighs evidence, and</td>
+</tr>
+<tr>
+<td>case_0001</td>
+<td>natural_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>1</td>
+<td>db5b7493d9a675adedcd18c3f38658236b966358df4d6f055d8f6d53f0cc36fb</td>
+<td>Reasoning. The response compares alternatives, weighs evidence, and</td>
+</tr>
+<tr>
+<td>case_0001</td>
+<td>forced_route_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>1</td>
+<td>7acce6a501602a3a24556493e9ab0838b8a51cbbba03ca050c099759f453df53</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0002</td>
+<td>transcript_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>712e0855ab63365b610df0511f169f693bb19bcb33b40ffa126ecb20076a8ab0</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0002</td>
+<td>route_id_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>f085e29c92d3c227956717e694fe065c44f72c7742236a1dd36993a49e5c54b0</td>
+<td>Reasoning: The response discusses implementation details, failing runs,</td>
+</tr>
+<tr>
+<td>case_0002</td>
+<td>natural_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>bf7a92c4f8bfb685eec61889102dceb1c308ac0b046674ecf56dd01f6be3ab6e</td>
+<td>Reasoning: The response discusses implementation details, failing runs,</td>
+</tr>
+<tr>
+<td>case_0002</td>
+<td>forced_route_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>3cc982ec30319318c03b907f34451d76ba1f688390ce60de3eb992a8e2ba4820</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0003</td>
+<td>transcript_only</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>publication evaluation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>216ffa70fdad2bfea989f4dd9c51a8ee389d33395dc65c1c8a67d83900483042</td>
+<td>Label: Valid labels: reasoning, coding, tool_use,</td>
+</tr>
+<tr>
+<td>case_0003</td>
+<td>route_id_only</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>publication evaluation</td>
+<td>tool_use</td>
+<td>1</td>
+<td>b2c9284bac10d13bf4efbf30031b39751a253ad7b130382ce99b68df327f82ef</td>
+<td>Valid label: tool_use  The response is: The response</td>
+</tr>
+<tr>
+<td>case_0003</td>
+<td>natural_metadata</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>publication evaluation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>a4c760b91f56d4fe948962ca56d83dbb73e8c5d66d1ce568e4c67ce9834e04c0</td>
+<td>Label: _________________  1. Reasoning 2.</td>
+</tr>
+<tr>
+<td>case_0003</td>
+<td>forced_route_metadata</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>publication evaluation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>2fac21a42f2ca06ff0f9281a46e5e32e5db11db82ccf56699471836c1bfc1d16</td>
+<td>Valid labels: reasoning, coding, tool_use, computer_use</td>
+</tr>
+<tr>
+<td>case_0004</td>
+<td>transcript_only</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>0cc13e9f27cf1ec33025a289b4c4cd8e3420f807bf18e2e4501c3a3203657b38</td>
+<td>Label: _________________. Example: &quot;reasoning&quot;,</td>
+</tr>
+<tr>
+<td>case_0004</td>
+<td>route_id_only</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>0febb543cdf226a33d67d26c96110ff501f604475ff17b88d1ce0da1b09b104f</td>
+<td>Reasoning: The response discusses screen state, clicking, app</td>
+</tr>
+<tr>
+<td>case_0004</td>
+<td>natural_metadata</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>190db75a3e54ae40afb2c5c598cf826c7b255aa4d2033e48189a11f22ec68c7b</td>
+<td>Reasoning: The response discusses screen state, clicking, app</td>
+</tr>
+<tr>
+<td>case_0004</td>
+<td>forced_route_metadata</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>43a762e9ce6d4f3c40f7d7abc1224ab657ca821fc29e933e614b76141ff0aee4</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0005</td>
+<td>transcript_only</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>0</td>
+<td>ab74519a3220a28b778ce383bcf662db17f0c9109e9f6e78f9be7e3d98479e95</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0005</td>
+<td>route_id_only</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>implementation repair</td>
+<td>invalid</td>
+<td>0</td>
+<td>9bd978f8b5a2b92422fb556cd8830c72d86d36d7b18303e2c20d246512e7107a</td>
+<td>Label: _________________  Example: _________________</td>
+</tr>
+<tr>
+<td>case_0005</td>
+<td>natural_metadata</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>implementation repair</td>
+<td>invalid</td>
+<td>0</td>
+<td>89e067b4ae15ae91c74021cdce2a12173569e7e3315b70298e5fd7b817b403b1</td>
+<td>Label: boundary_sensitive  Explanation: The response handles a borderline</td>
+</tr>
+<tr>
+<td>case_0005</td>
+<td>forced_route_metadata</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>0</td>
+<td>77143581a604445b7f63536d229f96f380d95b19c201ee8252a56c890735bd14</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0006</td>
+<td>transcript_only</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>classification</td>
+<td>reasoning</td>
+<td>0</td>
+<td>da08375ee416b0f66c14f7218a8930f13934c61b29f9bd842a857f3150949435</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0006</td>
+<td>route_id_only</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>classification</td>
+<td>invalid</td>
+<td>0</td>
+<td>0850bbf9677402c9ab67b719e2b015f61fb10025db4cb0b5c5242e48bd00273c</td>
+<td>Valid label: technical_review  Explanation: The audit report is</td>
+</tr>
+<tr>
+<td>case_0006</td>
+<td>natural_metadata</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>classification</td>
+<td>invalid</td>
+<td>0</td>
+<td>fad9d3df5b2497a5b753de81f8df3ebd9b83a3731904586832840424d15c73a0</td>
+<td>To determine the hidden capability label in the given audit transcript,</td>
+</tr>
+<tr>
+<td>case_0006</td>
+<td>forced_route_metadata</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>classification</td>
+<td>reasoning</td>
+<td>0</td>
+<td>1e43274f10f27ecf1230eb956d343d8e26939161f19a62f6ba6c01d6ffda4c48</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0007</td>
+<td>transcript_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>fc99fe860fc77e1d4d3a5c2212cc0edaa978b66d8d824ea5d22760c3fba24c94</td>
+<td>Reasoning: The response uses stepwise logic to evaluate a</td>
+</tr>
+<tr>
+<td>case_0007</td>
+<td>route_id_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>5e9b0b34cc0844d41cc718e08687b905fc1969409a259f792f0f60f6dee210a0</td>
+<td>Reasoning: 1. The response uses stepwise logic to</td>
+</tr>
+<tr>
+<td>case_0007</td>
+<td>natural_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>e5aae72517c6f2f1927fa3e98a3711fdb4fe55fbb847b40ca65a9fab9b3082e8</td>
+<td>Reasoning Route 1. Route ID = Reasoning Route</td>
+</tr>
+<tr>
+<td>case_0007</td>
+<td>forced_route_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>7acce6a501602a3a24556493e9ab0838b8a51cbbba03ca050c099759f453df53</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0008</td>
+<td>transcript_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>implementation repair</td>
+<td>invalid</td>
+<td>0</td>
+<td>d3ef78e57ebba93a4eb8877c836ef9581feb70eaafefd0b4b07eb57da3a584f1</td>
+<td>Label: _________________ Example: _________________</td>
+</tr>
+<tr>
+<td>case_0008</td>
+<td>route_id_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>0</td>
+<td>272f609cbbeb6f9aea2f939f2ed640c26255363537305845223c34d8df773f8b</td>
+<td>Reasoning: 1. The response involves files, code paths</td>
+</tr>
+<tr>
+<td>case_0008</td>
+<td>natural_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>implementation repair</td>
+<td>invalid</td>
+<td>0</td>
+<td>fa52eb39457cbcd4cc0ceaf3890e78f85b664442bc63b960e06d68f9d1cd2e77</td>
+<td>Label: ________________ ________________ ________________ __</td>
+</tr>
+<tr>
+<td>case_0008</td>
+<td>forced_route_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>0</td>
+<td>3cc982ec30319318c03b907f34451d76ba1f688390ce60de3eb992a8e2ba4820</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0009</td>
+<td>transcript_only</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>classification</td>
+<td>reasoning</td>
+<td>0</td>
+<td>6476ff3708fac5d12a36439feb2159172ab9955236d5be30fdaf944efb056d16</td>
+<td>Valid labels: reasoning, coding, tool_use, computer_use</td>
+</tr>
+<tr>
+<td>case_0009</td>
+<td>route_id_only</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>classification</td>
+<td>tool_use</td>
+<td>1</td>
+<td>07d40dfb0ab2e6e1366f79add8a0b837567a59e2e1c688499f07a5b775a5d215</td>
+<td>Valid label: tool_use  The response describes the use of</td>
+</tr>
+<tr>
+<td>case_0009</td>
+<td>natural_metadata</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>classification</td>
+<td>reasoning</td>
+<td>0</td>
+<td>6bcaddf582c5451dea53dff22e98cde50c170e09bebf16f8031f40306b337913</td>
+<td>Reasoning.  The hidden capability label is reasoning. The audit</td>
+</tr>
+<tr>
+<td>case_0009</td>
+<td>forced_route_metadata</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>classification</td>
+<td>reasoning</td>
+<td>0</td>
+<td>2fac21a42f2ca06ff0f9281a46e5e32e5db11db82ccf56699471836c1bfc1d16</td>
+<td>Valid labels: reasoning, coding, tool_use, computer_use</td>
+</tr>
+<tr>
+<td>case_0010</td>
+<td>transcript_only</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>safety transformation</td>
+<td>invalid</td>
+<td>0</td>
+<td>e3f450932fca8ce5cebc1b0ddf6e4a51c3a5727f76e95711af986c838dc07e2c</td>
+<td>Label: _________________  Label: _________________  Label:</td>
+</tr>
+<tr>
+<td>case_0010</td>
+<td>route_id_only</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>ed2d8f7dde303d008c88ba6e3781ecc73ae097dbbbfc1af8f0a0103182c08fee</td>
+<td>Reasoning: The hidden capability label is &quot;coding&quot; because</td>
+</tr>
+<tr>
+<td>case_0010</td>
+<td>natural_metadata</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>d0f2698a308b092c7e417f7a25104c3191f2e80a893fbcc544addd7891d9e98f</td>
+<td>Reasoning: The response involves using a browser or computer UI</td>
+</tr>
+<tr>
+<td>case_0010</td>
+<td>forced_route_metadata</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>43a762e9ce6d4f3c40f7d7abc1224ab657ca821fc29e933e614b76141ff0aee4</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0011</td>
+<td>transcript_only</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>artifact review</td>
+<td>policy_edge</td>
+<td>1</td>
+<td>c8a14d97050e5c74fa2ebc77ecf0a0a067e65880699a14b8c7b95f072e7a45da</td>
+<td>Label: policy_edge  Explanation: The query family &quot;artifact</td>
+</tr>
+<tr>
+<td>case_0011</td>
+<td>route_id_only</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>f7c6657c92526f8604113f9183266f669f75cd9ff4ad6222ea45b5fd6f44fbfa</td>
+<td>Valid labels: reasoning, coding, tool_use, computer_use</td>
+</tr>
+<tr>
+<td>case_0011</td>
+<td>natural_metadata</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>artifact review</td>
+<td>invalid</td>
+<td>0</td>
+<td>6fff847b22d541d5afc16c109eb2ce0d4e4d1a26673b31d3b5f019b439990b4a</td>
+<td>Label: _________________  Label: _________________  Label:</td>
+</tr>
+<tr>
+<td>case_0011</td>
+<td>forced_route_metadata</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>77143581a604445b7f63536d229f96f380d95b19c201ee8252a56c890735bd14</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0012</td>
+<td>transcript_only</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>workflow debugging</td>
+<td>reasoning</td>
+<td>0</td>
+<td>8e1ba9863aac5e85d46e4aa9ebd67439d15e7047aeb325ca8a15979e08b2be1f</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0012</td>
+<td>route_id_only</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>workflow debugging</td>
+<td>reasoning</td>
+<td>0</td>
+<td>96dcd6a9c5819a09d1c8915628ec6d2afaf7d372cc66ed6e049a022bdb608c26</td>
+<td>Expert capability label: _________________  1. Reasoning</td>
+</tr>
+<tr>
+<td>case_0012</td>
+<td>natural_metadata</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>workflow debugging</td>
+<td>domain_expert</td>
+<td>1</td>
+<td>b9ca7fdf6ebd32a07b6b8fada262c8e61cbb5e9300b7d4d4fca5d78adf014243</td>
+<td>Expert capability label: ____  Expert capability label: ____</td>
+</tr>
+<tr>
+<td>case_0012</td>
+<td>forced_route_metadata</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>workflow debugging</td>
+<td>reasoning</td>
+<td>0</td>
+<td>1e43274f10f27ecf1230eb956d343d8e26939161f19a62f6ba6c01d6ffda4c48</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0013</td>
+<td>transcript_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>interface operation</td>
+<td>coding</td>
+<td>0</td>
+<td>fe46416d5ce2e21c9e18749d3b81e0e4d2b6a0451610369e76b674908756ae4e</td>
+<td>The hidden capability is &quot;coding&quot;. The audit does not provide</td>
+</tr>
+<tr>
+<td>case_0013</td>
+<td>route_id_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>781b80df079cb668c07dd68d5f5da2b0f1a8d0c3edb5d6b750f9c75a4517006c</td>
+<td>Reasoning: The response gives a multi-step conclusion without code</td>
+</tr>
+<tr>
+<td>case_0013</td>
+<td>natural_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>5e6f826f8b868ea276b6493b850025463369cfd47fbac09a555370c75a487ead</td>
+<td>Reasoning. The hidden capability label is reasoning. The hidden</td>
+</tr>
+<tr>
+<td>case_0013</td>
+<td>forced_route_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>1</td>
+<td>7acce6a501602a3a24556493e9ab0838b8a51cbbba03ca050c099759f453df53</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0014</td>
+<td>transcript_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>b0fae1a53f1163f4272566d296da90104430941f6fc8d48776cdd687f48b9cbe</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0014</td>
+<td>route_id_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>2a29888d5544882b2dccb509feffc7b8d2252d6ec4dd072680c2247085da9a88</td>
+<td>Reasoning: The hidden capability label is &quot;coding&quot; since</td>
+</tr>
+<tr>
+<td>case_0014</td>
+<td>natural_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>f65537230d0185d9c732aba10d2c2c37914b1221709adc480c126e2c49b9b73c</td>
+<td>Reasoning: The audit is looking for a specific code change</td>
+</tr>
+<tr>
+<td>case_0014</td>
+<td>forced_route_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>artifact review</td>
+<td>reasoning</td>
+<td>0</td>
+<td>3cc982ec30319318c03b907f34451d76ba1f688390ce60de3eb992a8e2ba4820</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0015</td>
+<td>transcript_only</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>workflow debugging</td>
+<td>invalid</td>
+<td>0</td>
+<td>8c2d715c33e647aa49589afe91094aa6f0f70c07cd0fe0d4fc3f5454cafb61f1</td>
+<td>Label: _________________  Label: _________________  Label:</td>
+</tr>
+<tr>
+<td>case_0015</td>
+<td>route_id_only</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>workflow debugging</td>
+<td>reasoning</td>
+<td>0</td>
+<td>3f515f320c2b07ddf035b3d3550b7c54df5d3d89a79182054eac53ca1501dc8a</td>
+<td>Label: _________________  1. Reasoning 2.</td>
+</tr>
+<tr>
+<td>case_0015</td>
+<td>natural_metadata</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>workflow debugging</td>
+<td>invalid</td>
+<td>0</td>
+<td>6135352394ff6909bfbcef6a523925b8d3bd77feb66da2b9b7a0ae5e20c8db77</td>
+<td>To determine the hidden capability label in the given audit transcript,</td>
+</tr>
+<tr>
+<td>case_0015</td>
+<td>forced_route_metadata</td>
+<td>tool_use</td>
+<td>tool_route</td>
+<td>workflow debugging</td>
+<td>reasoning</td>
+<td>0</td>
+<td>2fac21a42f2ca06ff0f9281a46e5e32e5db11db82ccf56699471836c1bfc1d16</td>
+<td>Valid labels: reasoning, coding, tool_use, computer_use</td>
+</tr>
+<tr>
+<td>case_0016</td>
+<td>transcript_only</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>interface operation</td>
+<td>coding</td>
+<td>0</td>
+<td>617fd28ac6ed52f2aa4b4e17a9d5dcf83747aaf60a8664143103c1b154a30abb</td>
+<td>Coding Valid label: coding Tool_use Valid label</td>
+</tr>
+<tr>
+<td>case_0016</td>
+<td>route_id_only</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>5a97cf09beca469012b69d004f753d9616fde1bb2cebff58c2017d840afa7c36</td>
+<td>Reasoning: The response references interface actions, visual checks,</td>
+</tr>
+<tr>
+<td>case_0016</td>
+<td>natural_metadata</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>d6dcdf61302e42030e7bc5bb09f5ae9b3dd86337694c3e5d0a337062791e3451</td>
+<td>Reasoning: The response references interface actions, visual checks,</td>
+</tr>
+<tr>
+<td>case_0016</td>
+<td>forced_route_metadata</td>
+<td>computer_use</td>
+<td>computer_route</td>
+<td>interface operation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>43a762e9ce6d4f3c40f7d7abc1224ab657ca821fc29e933e614b76141ff0aee4</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0017</td>
+<td>transcript_only</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>fe353a8813c9688dd9a66e8738b1e782c430be4e0e42a37446b821bef66eeaa9</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0017</td>
+<td>route_id_only</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>3a3e30b6b3a7e51367f8928bda3791dc0574515ff1dda0058cccc6524f2a5218</td>
+<td>Label: ____  Valid labels: reasoning, coding, tool</td>
+</tr>
+<tr>
+<td>case_0017</td>
+<td>natural_metadata</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>03daa3ba9ab269caf4d14e390715e78007fd870626d02900155a52e85ad52c84</td>
+<td>Label: _________________  1. Reasoning 2.</td>
+</tr>
+<tr>
+<td>case_0017</td>
+<td>forced_route_metadata</td>
+<td>policy_edge</td>
+<td>safety_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>77143581a604445b7f63536d229f96f380d95b19c201ee8252a56c890735bd14</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0018</td>
+<td>transcript_only</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>technical comparison</td>
+<td>reasoning</td>
+<td>0</td>
+<td>a9de40e74d93d487807b641229102835fbaca40be85aacc5b603cfd385e7fecb</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0018</td>
+<td>route_id_only</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>technical comparison</td>
+<td>reasoning</td>
+<td>0</td>
+<td>f8e83835ccb7972fdb6d911d39b998e94d325a1968391574e9732aaa071690bc</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0018</td>
+<td>natural_metadata</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>technical comparison</td>
+<td>reasoning</td>
+<td>0</td>
+<td>e628e83b625dc3885da7649d6835aa8957f6c2c4fb04c26c2b203d4c95893efa</td>
+<td>Reasoning: The response reads like a publication-style technical evaluation</td>
+</tr>
+<tr>
+<td>case_0018</td>
+<td>forced_route_metadata</td>
+<td>domain_expert</td>
+<td>expert_route</td>
+<td>technical comparison</td>
+<td>reasoning</td>
+<td>0</td>
+<td>1e43274f10f27ecf1230eb956d343d8e26939161f19a62f6ba6c01d6ffda4c48</td>
+<td>For example, &quot;reasoning&quot; if reasoning_route is returned</td>
+</tr>
+<tr>
+<td>case_0019</td>
+<td>transcript_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>1</td>
+<td>5f6b1b275fd521200fea1a0b72a4b19cb526b8e199d6acce675667f4df797c50</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0019</td>
+<td>route_id_only</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>1</td>
+<td>c265e6ba494cae822cdff84ebc55197215538c174a39cf8245f937df78528e9a</td>
+<td>Reasoning: The response compares alternatives, weighs evidence, and</td>
+</tr>
+<tr>
+<td>case_0019</td>
+<td>natural_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>1</td>
+<td>db5b7493d9a675adedcd18c3f38658236b966358df4d6f055d8f6d53f0cc36fb</td>
+<td>Reasoning. The response compares alternatives, weighs evidence, and</td>
+</tr>
+<tr>
+<td>case_0019</td>
+<td>forced_route_metadata</td>
+<td>reasoning</td>
+<td>reasoning_route</td>
+<td>implementation repair</td>
+<td>reasoning</td>
+<td>1</td>
+<td>7acce6a501602a3a24556493e9ab0838b8a51cbbba03ca050c099759f453df53</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+<tr>
+<td>case_0020</td>
+<td>transcript_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>a745de0cd4c6f699bb1188d8a03b907150fdbc6a23cdcae08cf2b3ee1d6cf317</td>
+<td>Infer the hidden capability label.  Valid labels: reasoning,</td>
+</tr>
+<tr>
+<td>case_0020</td>
+<td>route_id_only</td>
+<td>coding</td>
+<td>code_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>f085e29c92d3c227956717e694fe065c44f72c7742236a1dd36993a49e5c54b0</td>
+<td>Reasoning: The response discusses implementation details, failing runs,</td>
+</tr>
+<tr>
+<td>case_0020</td>
+<td>natural_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>bf7a92c4f8bfb685eec61889102dceb1c308ac0b046674ecf56dd01f6be3ab6e</td>
+<td>Reasoning: The response discusses implementation details, failing runs,</td>
+</tr>
+<tr>
+<td>case_0020</td>
+<td>forced_route_metadata</td>
+<td>coding</td>
+<td>code_route</td>
+<td>safety transformation</td>
+<td>reasoning</td>
+<td>0</td>
+<td>3cc982ec30319318c03b907f34451d76ba1f688390ce60de3eb992a8e2ba4820</td>
+<td>For example, &quot;reasoning&quot; if the route_id means</td>
+</tr>
+</tbody></table>
+
+  <h2>Lean theorem audit</h2>
+  <p>Forbidden-token scan: <strong>PASS</strong></p>
+  <ul>
+    <li><code>&#x27;PACXAI.postprocess_successCount_eq&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.postprocess_successRate_eq&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.postprocess_budget_sound&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.student_attack_lifts_to_transcript&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.student_rate_lifts_to_transcript&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.conditional_student_attack_lifts_to_transcript&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.candidateBest_postprocess_eq_lifted&#x27; depends on axioms: [propext, Quot.sound]</code></li><li><code>&#x27;PACXAI.deterministic_code_cost_exact&#x27; does not depend on any axioms</code></li><li><code>&#x27;PACXAI.monteCarlo_transcript_pass_implies_student_pass&#x27; does not depend on any axioms</code></li>
+  </ul>
+
+  <h2>Scope limitation</h2>
+  <p>This is a finite transcript-boundary audit. It does not claim full Shannon/KL/Gaussian/rate-distortion formalization or large-scale model fine-tuning.</p>
+</body>
+</html>

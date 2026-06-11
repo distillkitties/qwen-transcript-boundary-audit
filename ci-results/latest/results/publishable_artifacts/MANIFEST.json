@@ -1,0 +1,251 @@
+{
+  "artifact": "qwen-transcript-boundary-audit",
+  "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+  "n_cases": 120,
+  "fixed_audit_budget_successes": 30,
+  "headline": {
+    "successes": {
+      "transcript_only": 25,
+      "route_id_only": 34,
+      "natural_metadata": 27,
+      "forced_route_metadata": 20
+    },
+    "accuracies": {
+      "transcript_only": 0.208333,
+      "route_id_only": 0.283333,
+      "natural_metadata": 0.225,
+      "forced_route_metadata": 0.166667
+    },
+    "lifts_vs_transcript_only": {
+      "route_id_only": 9,
+      "natural_metadata": 2,
+      "forced_route_metadata": -5
+    },
+    "best_metadata_condition": "route_id_only",
+    "best_metadata_lift": 9,
+    "bootstrap_ci": {
+      "route_id_only_minus_transcript": {
+        "mean_lift": 0.075,
+        "ci95_low": 0,
+        "ci95_high": 0.15
+      },
+      "natural_metadata_minus_transcript": {
+        "mean_lift": 0.016667,
+        "ci95_low": -0.041667,
+        "ci95_high": 0.083333
+      },
+      "forced_route_metadata_minus_transcript": {
+        "mean_lift": -0.041667,
+        "ci95_low": -0.091667,
+        "ci95_high": 0.008333
+      }
+    },
+    "false_pass": {
+      "route_id_only": true,
+      "natural_metadata": false,
+      "forced_route_metadata": false
+    }
+  },
+  "files": [
+    {
+      "path": ".github/workflows/qwen-transcript-boundary-audit-final.yml",
+      "sha256": "e28ea057d3a8af5c6e367524e0fc7b3026cd5a80979d5339838aa960ce1adcb3",
+      "bytes": 58674
+    },
+    {
+      "path": "ARTIFACT_EVALUATION_README.md",
+      "sha256": "e465dd7781ae900f208dd3eaa30debf792592892b8e671722d834054962216e4",
+      "bytes": 246
+    },
+    {
+      "path": "LIMITATIONS.md",
+      "sha256": "7246f854d8d4a260249d8cb99e463eb45af943f6639270de3ac7041fb5ed90a5",
+      "bytes": 492
+    },
+    {
+      "path": "MANIFEST.json",
+      "sha256": "6ee9d982d06f370d15cb889444dd7037d4f852e82ac06cc86791ad86c5fbbb6e",
+      "bytes": 7871
+    },
+    {
+      "path": "OPEN_ME_FIRST.md",
+      "sha256": "dec9c67696800ddcac2c1473316b590dab639e3f94645b6500bf55de74b7873f",
+      "bytes": 774
+    },
+    {
+      "path": "PACXAI/AuditBoundary.lean",
+      "sha256": "c942fe5e986d489ddeb7f81a5ffc72a6523232a84bf188027400a7e6199ea7a9",
+      "bytes": 6144
+    },
+    {
+      "path": "PACXAI/Core.lean",
+      "sha256": "5d57b817ac6b68401d45a8439e9434cd533b5bda2c76bb13a8687fffe2f9ff24",
+      "bytes": 2577
+    },
+    {
+      "path": "PACXAI.lean",
+      "sha256": "ed09c757b9756aafcb09dc84634efc765f4b267519c4f63b3eb640405a50e249",
+      "bytes": 118
+    },
+    {
+      "path": "README.md",
+      "sha256": "13d9f5eb8f8e321aa057ba32298678afec0a90f7c9e02c4ef12e40928cc8805e",
+      "bytes": 387
+    },
+    {
+      "path": "REPRODUCE.md",
+      "sha256": "337d5d6d5923f8a1509cc918f0cc23d938fcb2a41a8a7d180bd67fcb9ee41d51",
+      "bytes": 460
+    },
+    {
+      "path": "THREAT_MODEL.md",
+      "sha256": "84f9ea6cc7c556ae0aa0ef334564d423ea70977d3088ac8ba48d357c86a98532",
+      "bytes": 364
+    },
+    {
+      "path": "experiments/make_report.py",
+      "sha256": "969d4995644a64c2713d26f4701d707c1acda030d65e583efb6e2e7d52b7d8ce",
+      "bytes": 11750
+    },
+    {
+      "path": "experiments/qwen_boundary_audit.py",
+      "sha256": "a24c865b87d49ca6039215c7384f71f2dde2c4ba33dcb89ef7ac260cebc29273",
+      "bytes": 12344
+    },
+    {
+      "path": "lakefile.lean",
+      "sha256": "432d3bebfbfc4d9d4a74aef899da2a7b6fa094e3688eaca17ceca488a3621ad6",
+      "bytes": 139
+    },
+    {
+      "path": "lean-toolchain",
+      "sha256": "ce4c4e3d87434b9663f46de25ce34b48a0cf0d392e0a320a0787b4674a2d7b61",
+      "bytes": 29
+    },
+    {
+      "path": "logs/lake-version.log",
+      "sha256": "9843b01c88032953b98a40e03080b7be8ed4a38b5f0dc953f1a1bc300b20459e",
+      "bytes": 57
+    },
+    {
+      "path": "logs/lean-audit.log",
+      "sha256": "75bb1b5a2784f0ce79fd3006108e9b7b2bfbddffe7818f3942be85b571bd5d9c",
+      "bytes": 748
+    },
+    {
+      "path": "logs/lean-build.log",
+      "sha256": "1a01ee63a50bc881a68752639fa71434f1dfb466a8a403304ac4167617054c44",
+      "bytes": 285
+    },
+    {
+      "path": "logs/lean-version.log",
+      "sha256": "6b38d6160c0223bc189f88caad3d56588b06ca7af2b81d19cb4dbcef5024f387",
+      "bytes": 110
+    },
+    {
+      "path": "logs/project-files.log",
+      "sha256": "f613436bcb3d1371ff51f5bc12fd666b7de4e38ccecbc15f36c816a8654871e8",
+      "bytes": 247
+    },
+    {
+      "path": "logs/qwen-boundary-audit.log",
+      "sha256": "6cab673b170ab59e4a630762794e494a3ee9384c7f02ddc6bb7dd99bde20fc57",
+      "bytes": 69006
+    },
+    {
+      "path": "results/publishable_artifacts/README.md",
+      "sha256": "b8d7d2ec3d87e7d2b41e4950c2f43f6d4c97f884660703b2323e59dc91ea9fbb",
+      "bytes": 404
+    },
+    {
+      "path": "results/publishable_artifacts/REPORT.md",
+      "sha256": "f65ad8e85a024750850b09fea8714351222d23ab93d3843e1078e4e8ee2067b2",
+      "bytes": 812
+    },
+    {
+      "path": "results/publishable_artifacts/bootstrap_confidence_intervals.csv",
+      "sha256": "59c0cd5a646470f757ff40e39875153c0d2b79075f4eec156407d63978f612c8",
+      "bytes": 222
+    },
+    {
+      "path": "results/publishable_artifacts/bootstrap_lift_ci.png",
+      "sha256": "38ca912b9f7ba30362cc71bcd7d216c3df2b5275beff0ef524f9aff694a021c0",
+      "bytes": 54170
+    },
+    {
+      "path": "results/publishable_artifacts/bootstrap_lift_ci.svg",
+      "sha256": "2ebfd174d14db82838f9d97e9589cce8d9e379c54239c5935df9c2c3b0a98648",
+      "bytes": 30994
+    },
+    {
+      "path": "results/publishable_artifacts/index.html",
+      "sha256": "a146fa76c0d46d4b77e66723e1044501a3055044ca901f8c7dc971cd7ce88c32",
+      "bytes": 29709
+    },
+    {
+      "path": "results/publishable_artifacts/prompts.csv",
+      "sha256": "0eeb95346360196f2213e961b4e9e461785a68c609957da72a10a10248d3ea3f",
+      "bytes": 270468
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_boundary_success.png",
+      "sha256": "167c09cf2ae02257058a0cdec010027b81ee466c8d3223e7871d192f54f298c0",
+      "bytes": 63929
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_boundary_success.svg",
+      "sha256": "056d8fe57b396c3203a99b65b3bd314830f5b7595ba7dfaa92f02173b5892819",
+      "bytes": 40489
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_metrics.csv",
+      "sha256": "85ccb5705004937a46fde1cf0a08af56f1246559156dac91e93e8aab0c61b7df",
+      "bytes": 202
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_predictions.csv",
+      "sha256": "3ce3cac8c676a402745994f3fab36ad33c6d0d407aa8079136be2a5e72e432f3",
+      "bytes": 99818
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_success_by_label.csv",
+      "sha256": "acee1b30cfba5876a4ca81778e35e428d62710b29fe0a382e2c6a5984831dcfa",
+      "bytes": 198
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_success_by_label.png",
+      "sha256": "be3461c0d37cdadcf467e4ac2edb1f6a8ec9ded27bafc5f55be7ce52bc00ad58",
+      "bytes": 80926
+    },
+    {
+      "path": "results/publishable_artifacts/qwen_success_by_label.svg",
+      "sha256": "b328e11497338b19ea7a94a65cded1c0a2bba09b953db2401dd4b0671ffc8751",
+      "bytes": 47167
+    },
+    {
+      "path": "results/publishable_artifacts/theorem_alignment.csv",
+      "sha256": "62fd01aca41a2d98a8999f4f314602112004eb8d282ecba158c90bd7dade6747",
+      "bytes": 602
+    },
+    {
+      "path": "results/qwen_boundary_audit/prompts.csv",
+      "sha256": "b6213374529933f6ffc9e6fc14463c3a6b8c8211a2c862bcc237612a211912a3",
+      "bytes": 270949
+    },
+    {
+      "path": "results/qwen_boundary_audit/qwen_predictions.csv",
+      "sha256": "f371df2e7236f81b1eae053deeb6b10fdca196595a7c0431cf9c18782090e37a",
+      "bytes": 100299
+    },
+    {
+      "path": "results/qwen_boundary_audit/summary.json",
+      "sha256": "f1083066273a50654bad71ecc257dac382c087efa91367cf41618ada55fe9830",
+      "bytes": 1378
+    },
+    {
+      "path": "scripts/audit.sh",
+      "sha256": "f223a13d9328ac05ba481f6a6522e405c9cb58d4b14ee455e91d7c4923060a3b",
+      "bytes": 981
+    }
+  ]
+}

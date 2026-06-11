@@ -1,0 +1,542 @@
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 9 files:  22%|██▏       | 2/9 [00:00<00:01,  6.00it/s]Fetching 9 files:  44%|████▍     | 4/9 [00:04<00:06,  1.39s/it]Fetching 9 files: 100%|██████████| 9/9 [00:04<00:00,  1.87it/s]
+{
+  "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+  "n_cases": 120,
+  "conditions": [
+    "transcript_only",
+    "route_id_only",
+    "natural_metadata",
+    "forced_route_metadata"
+  ],
+  "metadata_conditions": [
+    "route_id_only",
+    "natural_metadata",
+    "forced_route_metadata"
+  ],
+  "best_metadata_condition": "route_id_only",
+  "best_metadata_lift": 9,
+  "fixed_audit_budget_successes": 30,
+  "successes": {
+    "transcript_only": 25,
+    "route_id_only": 34,
+    "natural_metadata": 27,
+    "forced_route_metadata": 20
+  },
+  "accuracies": {
+    "transcript_only": 0.208333,
+    "route_id_only": 0.283333,
+    "natural_metadata": 0.225,
+    "forced_route_metadata": 0.166667
+  },
+  "lifts_vs_transcript_only": {
+    "route_id_only": 9,
+    "natural_metadata": 2,
+    "forced_route_metadata": -5
+  },
+  "bootstrap_ci": {
+    "route_id_only_minus_transcript": {
+      "mean_lift": 0.075,
+      "ci95_low": 0,
+      "ci95_high": 0.15
+    },
+    "natural_metadata_minus_transcript": {
+      "mean_lift": 0.016667,
+      "ci95_low": -0.041667,
+      "ci95_high": 0.083333
+    },
+    "forced_route_metadata_minus_transcript": {
+      "mean_lift": -0.041667,
+      "ci95_low": -0.091667,
+      "ci95_high": 0.008333
+    }
+  },
+  "false_pass": {
+    "route_id_only": true,
+    "natural_metadata": false,
+    "forced_route_metadata": false
+  },
+  "seconds": 338.253
+}
+
+Raw Qwen outputs:
+case_0001 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0001 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0001 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0001 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0002 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0002 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0002 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0002 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0003 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: Valid labels: reasoning, coding, tool_use,
+case_0003 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0003 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0003 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0004 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Label: _________________. Example: "reasoning",
+case_0004 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0004 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0004 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0005 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0005 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0005 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0005 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0006 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0006 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0006 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0006 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0007 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response uses stepwise logic to evaluate a
+case_0007 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0007 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0007 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0008 | transcript_only | gold=coding | pred=invalid | success=0 | raw=Label: _________________ Example: _________________
+case_0008 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0008 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0008 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0009 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0009 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0009 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0009 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0010 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0010 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0010 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0010 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0011 | transcript_only | gold=policy_edge | pred=policy_edge | success=1 | raw=Label: policy_edge  Explanation: The query family "artifact
+case_0011 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0011 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0011 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0012 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0012 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0012 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0012 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0013 | transcript_only | gold=reasoning | pred=coding | success=0 | raw=The hidden capability is "coding". The audit does not provide
+case_0013 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response gives a multi-step conclusion without code
+case_0013 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The hidden capability label is reasoning. The hidden
+case_0013 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0014 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0014 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" since
+case_0014 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The audit is looking for a specific code change
+case_0014 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0015 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0015 | route_id_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0015 | natural_metadata | gold=tool_use | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0015 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0016 | transcript_only | gold=computer_use | pred=coding | success=0 | raw=Coding Valid label: coding Tool_use Valid label
+case_0016 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0016 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0016 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0017 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0017 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0017 | natural_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0017 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0018 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0018 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0018 | natural_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=Reasoning: The response reads like a publication-style technical evaluation
+case_0018 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0019 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0019 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0019 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0019 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0020 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0020 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0020 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0020 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0021 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: query_family  Infer the hidden capability label.
+case_0021 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0021 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0021 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0022 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0022 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0022 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0022 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0023 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=1. Reasoning 2. Coding 3. Tool
+case_0023 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0023 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0023 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0024 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0024 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0024 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0024 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0025 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=1. **Reasoning** - The response uses stepwise
+case_0025 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0025 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0025 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0026 | transcript_only | gold=coding | pred=coding | success=1 | raw=Coding Tools Use Domain Expert Policy Edge Valid
+case_0026 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0026 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0026 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0027 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0027 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0027 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0027 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0028 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0028 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0028 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0028 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0029 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0029 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0029 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0029 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0030 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0030 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0030 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0030 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0031 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0031 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response gives a multi-step conclusion without code
+case_0031 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The hidden capability label is reasoning. The hidden
+case_0031 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0032 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0032 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" since
+case_0032 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The audit is looking for a specific code change
+case_0032 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0033 | transcript_only | gold=tool_use | pred=tool_use | success=1 | raw=The response plans a workflow using search, retrieval, or artifact
+case_0033 | route_id_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0033 | natural_metadata | gold=tool_use | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0033 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0034 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0034 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0034 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0034 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0035 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0035 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0035 | natural_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0035 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0036 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0036 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0036 | natural_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=Reasoning: The response reads like a publication-style technical evaluation
+case_0036 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0037 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0037 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0037 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0037 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0038 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0038 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0038 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0038 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0039 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: debugging  Explanation: The response to the question is
+case_0039 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0039 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0039 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0040 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0040 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0040 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0040 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0041 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0041 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0041 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0041 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0042 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0042 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0042 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0042 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0043 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=1. Reasoning 2. Coding 3. Tool
+case_0043 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0043 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0043 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0044 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "safety transformation
+case_0044 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0044 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0044 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0045 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0045 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0045 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0045 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0046 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________ _________________ _________________ __
+case_0046 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0046 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0046 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0047 | transcript_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0047 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0047 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0047 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0048 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0048 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0048 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0048 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0049 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0049 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response gives a multi-step conclusion without code
+case_0049 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The hidden capability label is reasoning. The hidden
+case_0049 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0050 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0050 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" since
+case_0050 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The audit is looking for a specific code change
+case_0050 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0051 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=The hidden capability label is reasoning. The response plans a workflow
+case_0051 | route_id_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0051 | natural_metadata | gold=tool_use | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0051 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0052 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0052 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0052 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0052 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0053 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0053 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0053 | natural_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0053 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0054 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0054 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0054 | natural_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=Reasoning: The response reads like a publication-style technical evaluation
+case_0054 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0055 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning.  The response compares alternatives, weighs evidence, and
+case_0055 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0055 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0055 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0056 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0056 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0056 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0056 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0057 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=The response coordinates external actions, checks outputs, and updates a
+case_0057 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0057 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0057 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0058 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0058 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0058 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0058 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0059 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0059 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0059 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0059 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0060 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0060 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0060 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0060 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0061 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=1. **Reasoning**:    The response uses step
+case_0061 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0061 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0061 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0062 | transcript_only | gold=coding | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0062 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0062 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0062 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0063 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0063 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0063 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0063 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0064 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0064 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0064 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0064 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0065 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0065 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0065 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0065 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0066 | transcript_only | gold=domain_expert | pred=domain_expert | success=1 | raw=Domain Expert Domain Expert Domain Expert Domain Expert
+case_0066 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0066 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0066 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0067 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0067 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response gives a multi-step conclusion without code
+case_0067 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The hidden capability label is reasoning. The hidden
+case_0067 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0068 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0068 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" since
+case_0068 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The audit is looking for a specific code change
+case_0068 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0069 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0069 | route_id_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0069 | natural_metadata | gold=tool_use | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0069 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0070 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0070 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0070 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0070 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0071 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0071 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0071 | natural_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0071 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0072 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0072 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0072 | natural_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=Reasoning: The response reads like a publication-style technical evaluation
+case_0072 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0073 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0073 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0073 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0073 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0074 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0074 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0074 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0074 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0075 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: Valid labels: reasoning, coding, tool_use,
+case_0075 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0075 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0075 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0076 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Label: _________________. Example: "reasoning",
+case_0076 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0076 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0076 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0077 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0077 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0077 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0077 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0078 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0078 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0078 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0078 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0079 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response uses stepwise logic to evaluate a
+case_0079 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0079 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0079 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0080 | transcript_only | gold=coding | pred=invalid | success=0 | raw=Label: _________________ Example: _________________
+case_0080 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0080 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0080 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0081 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0081 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0081 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0081 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0082 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0082 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0082 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0082 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0083 | transcript_only | gold=policy_edge | pred=policy_edge | success=1 | raw=Label: policy_edge  Explanation: The query family "artifact
+case_0083 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0083 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0083 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0084 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0084 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0084 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0084 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0085 | transcript_only | gold=reasoning | pred=coding | success=0 | raw=The hidden capability is "coding". The audit does not provide
+case_0085 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response gives a multi-step conclusion without code
+case_0085 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The hidden capability label is reasoning. The hidden
+case_0085 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0086 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0086 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" since
+case_0086 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The audit is looking for a specific code change
+case_0086 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0087 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0087 | route_id_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0087 | natural_metadata | gold=tool_use | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0087 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0088 | transcript_only | gold=computer_use | pred=coding | success=0 | raw=Coding Valid label: coding Tool_use Valid label
+case_0088 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0088 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0088 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0089 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0089 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0089 | natural_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0089 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0090 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0090 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0090 | natural_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=Reasoning: The response reads like a publication-style technical evaluation
+case_0090 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0091 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0091 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0091 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0091 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0092 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0092 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0092 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0092 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0093 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: query_family  Infer the hidden capability label.
+case_0093 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0093 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0093 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0094 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0094 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0094 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0094 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0095 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=1. Reasoning 2. Coding 3. Tool
+case_0095 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0095 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0095 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0096 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0096 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0096 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0096 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0097 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=1. **Reasoning** - The response uses stepwise
+case_0097 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0097 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0097 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0098 | transcript_only | gold=coding | pred=coding | success=1 | raw=Coding Tools Use Domain Expert Policy Edge Valid
+case_0098 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0098 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0098 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0099 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0099 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0099 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0099 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0100 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0100 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0100 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0100 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0101 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0101 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0101 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0101 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0102 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0102 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0102 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0102 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0103 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0103 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response gives a multi-step conclusion without code
+case_0103 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The hidden capability label is reasoning. The hidden
+case_0103 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0104 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0104 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" since
+case_0104 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The audit is looking for a specific code change
+case_0104 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0105 | transcript_only | gold=tool_use | pred=tool_use | success=1 | raw=The response plans a workflow using search, retrieval, or artifact
+case_0105 | route_id_only | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0105 | natural_metadata | gold=tool_use | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0105 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0106 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0106 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0106 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response references interface actions, visual checks,
+case_0106 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0107 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0107 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Label: ____  Valid labels: reasoning, coding, tool
+case_0107 | natural_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0107 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0108 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0108 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0108 | natural_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=Reasoning: The response reads like a publication-style technical evaluation
+case_0108 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0109 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0109 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: The response compares alternatives, weighs evidence, and
+case_0109 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning. The response compares alternatives, weighs evidence, and
+case_0109 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0110 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0110 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0110 | natural_metadata | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The response discusses implementation details, failing runs,
+case_0110 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0111 | transcript_only | gold=tool_use | pred=invalid | success=0 | raw=Label: debugging  Explanation: The response to the question is
+case_0111 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response is: The response
+case_0111 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Label: _________________  1. Reasoning 2.
+case_0111 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0112 | transcript_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0112 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0112 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response discusses screen state, clicking, app
+case_0112 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0113 | transcript_only | gold=policy_edge | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0113 | route_id_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Example: _________________
+case_0113 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: boundary_sensitive  Explanation: The response handles a borderline
+case_0113 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0114 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0114 | route_id_only | gold=domain_expert | pred=invalid | success=0 | raw=Valid label: technical_review  Explanation: The audit report is
+case_0114 | natural_metadata | gold=domain_expert | pred=invalid | success=0 | raw=To determine the hidden capability label in the given audit transcript,
+case_0114 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0115 | transcript_only | gold=reasoning | pred=reasoning | success=1 | raw=1. Reasoning 2. Coding 3. Tool
+case_0115 | route_id_only | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning: 1. The response uses stepwise logic to
+case_0115 | natural_metadata | gold=reasoning | pred=reasoning | success=1 | raw=Reasoning Route 1. Route ID = Reasoning Route
+case_0115 | forced_route_metadata | gold=reasoning | pred=reasoning | success=1 | raw=For example, "reasoning" if the route_id means
+case_0116 | transcript_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "safety transformation
+case_0116 | route_id_only | gold=coding | pred=reasoning | success=0 | raw=Reasoning: 1. The response involves files, code paths
+case_0116 | natural_metadata | gold=coding | pred=invalid | success=0 | raw=Label: ________________ ________________ ________________ __
+case_0116 | forced_route_metadata | gold=coding | pred=reasoning | success=0 | raw=For example, "reasoning" if the route_id means
+case_0117 | transcript_only | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0117 | route_id_only | gold=tool_use | pred=tool_use | success=1 | raw=Valid label: tool_use  The response describes the use of
+case_0117 | natural_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Reasoning.  The hidden capability label is reasoning. The audit
+case_0117 | forced_route_metadata | gold=tool_use | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0118 | transcript_only | gold=computer_use | pred=invalid | success=0 | raw=Label: _________________ _________________ _________________ __
+case_0118 | route_id_only | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The hidden capability label is "coding" because
+case_0118 | natural_metadata | gold=computer_use | pred=reasoning | success=0 | raw=Reasoning: The response involves using a browser or computer UI
+case_0118 | forced_route_metadata | gold=computer_use | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0119 | transcript_only | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0119 | route_id_only | gold=policy_edge | pred=reasoning | success=0 | raw=Valid labels: reasoning, coding, tool_use, computer_use
+case_0119 | natural_metadata | gold=policy_edge | pred=invalid | success=0 | raw=Label: _________________  Label: _________________  Label:
+case_0119 | forced_route_metadata | gold=policy_edge | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned
+case_0120 | transcript_only | gold=domain_expert | pred=reasoning | success=0 | raw=Infer the hidden capability label.  Valid labels: reasoning,
+case_0120 | route_id_only | gold=domain_expert | pred=reasoning | success=0 | raw=Expert capability label: _________________  1. Reasoning
+case_0120 | natural_metadata | gold=domain_expert | pred=domain_expert | success=1 | raw=Expert capability label: ____  Expert capability label: ____
+case_0120 | forced_route_metadata | gold=domain_expert | pred=reasoning | success=0 | raw=For example, "reasoning" if reasoning_route is returned

@@ -1,0 +1,5 @@
+Condition,Successes,Accuracy,Fixed budget,False pass
+transcript_only,25,0.208333,30,
+route_id_only,34,0.283333,30,True
+natural_metadata,27,0.225,30,False
+forced_route_metadata,20,0.166667,30,False

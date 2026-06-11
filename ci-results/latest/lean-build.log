@@ -1,0 +1,6 @@
+info: qwen_transcript_boundary_audit: no previous manifest, creating one from scratch
+info: toolchain not updated; already up-to-date
+✔ [2/5] Built PACXAI.Core (530ms)
+✔ [3/5] Built PACXAI.AuditBoundary (493ms)
+✔ [4/5] Built PACXAI (290ms)
+Build completed successfully (5 jobs).
