@@ -26,6 +26,7 @@ env:
 
 jobs:
   qwen-transcript-boundary-audit:
+    name: Lean proofs + real Qwen/MLX boundary audit
     runs-on: macos-15
     timeout-minutes: 180
 
@@ -53,26 +54,27 @@ jobs:
           echo "QWEN_MODEL=$MODEL_INPUT" >> "$GITHUB_ENV"
           echo "N_CASES=$CASE_INPUT" >> "$GITHUB_ENV"
 
-          echo "Model: $MODEL_INPUT"
-          echo "Cases: $CASE_INPUT"
+          echo "Selected model: $MODEL_INPUT"
+          echo "Selected case count: $CASE_INPUT"
 
-      - name: Install Python, MLX, Qwen tooling, and plotting stack
+      - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Create venv
+      - name: Install MLX, mlx-lm, and report dependencies
         run: |
           set -euxo pipefail
 
           python3 -m venv .venv
           source .venv/bin/activate
+
           python -m pip install --upgrade pip
           python -m pip install mlx mlx-lm numpy pandas matplotlib
 
           python - <<'PY'
-          import sys
           import platform
+          import sys
           import mlx.core as mx
 
           x = mx.array([1.0, 2.0, 3.0])
@@ -458,7 +460,7 @@ jobs:
           Expected headline result:
           - Lean build succeeds.
           - Lean audit has no forbidden proof tokens.
-          - Route metadata conditions improve recovery over transcript-only in the forced metadata condition.
+          - Forced route metadata improves recovery over transcript-only.
           - HTML report appears at `results/publishable_artifacts/index.html`.
           EOF
 
@@ -631,8 +633,6 @@ jobs:
           """
 
               if condition == "forced_route_metadata":
-                  # This condition is intentionally a direct metadata extraction task.
-                  # It is the positive-control condition proving that omitted route metadata can invalidate the audit boundary.
                   return f"""You are given deployment metadata that was not included in the audited transcript.
 
           Valid labels: {labels}
@@ -694,7 +694,6 @@ jobs:
               return "invalid"
 
           def qwen_generate(model, tokenizer, prompt: str, max_tokens: int) -> str:
-              # Prefer deterministic settings when supported by installed mlx-lm.
               try:
                   return generate(model, tokenizer, prompt=prompt, max_tokens=max_tokens, temp=0.0, top_p=1.0, verbose=False)
               except TypeError:
@@ -838,7 +837,6 @@ jobs:
           from __future__ import annotations
 
           import csv
-          import hashlib
           import html
           import json
           import os
@@ -1057,7 +1055,7 @@ jobs:
             <h2>Sample predictions</h2>
             {table_html(predictions.to_dict(orient="records")[:80])}
 
-            <h2>Lean axiom audit</h2>
+            <h2>Lean theorem audit</h2>
             <p>Forbidden-token scan: <strong>{verdict(no_forbidden)}</strong></p>
             <ul>
               {''.join('<li><code>' + esc(line) + '</code></li>' for line in theorem_lines)}
@@ -1149,14 +1147,17 @@ jobs:
 
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf \
             | sh -s -- -y --default-toolchain none
+
+          export PATH="$HOME/.elan/bin:$PATH"
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
           TOOLCHAIN="$(cat lean-toolchain)"
-          elan toolchain install "$TOOLCHAIN" || true
-          elan default "$TOOLCHAIN"
 
-          lean --version | tee lean-version.log
-          lake --version | tee lake-version.log
+          "$HOME/.elan/bin/elan" toolchain install "$TOOLCHAIN"
+          "$HOME/.elan/bin/elan" default "$TOOLCHAIN"
+
+          "$HOME/.elan/bin/lean" --version | tee lean-version.log
+          "$HOME/.elan/bin/lake" --version | tee lake-version.log
 
       - name: Show generated files
         run: |
@@ -1379,7 +1380,7 @@ jobs:
           EOF
 
       - name: Commit generated outputs
-        if: always() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request'
         run: |
           set -euxo pipefail
 
@@ -1393,14 +1394,23 @@ jobs:
             PACXAI \
             scripts \
             experiments \
-            results \
-            ci-results/latest \
             README.md \
             REPRODUCE.md \
             LIMITATIONS.md \
             THREAT_MODEL.md \
-            ARTIFACT_EVALUATION_README.md \
-            MANIFEST.json
+            ARTIFACT_EVALUATION_README.md
+
+          if [ -d results ]; then
+            git add results
+          fi
+
+          if [ -d ci-results/latest ]; then
+            git add ci-results/latest
+          fi
+
+          if [ -f MANIFEST.json ]; then
+            git add MANIFEST.json
+          fi
 
           if git diff --cached --quiet; then
             echo "No generated changes to commit."
@@ -1411,7 +1421,7 @@ jobs:
 
       - name: Upload reviewer packet
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: qwen-transcript-boundary-audit-reviewer-packet
           path: |
